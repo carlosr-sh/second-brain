@@ -1,0 +1,81 @@
+# CI on every push/PR; deploy to Cloudflare only from main, only if CI passes.
+#
+# Required repository secret:   CLOUDFLARE_API_TOKEN
+# Optional repository variable: CLOUDFLARE_ACCOUNT_ID (skips account lookup)
+# Third-party actions are pinned to commit SHAs (tags are mutable).
+name: CI / Deploy
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+env:
+  WRANGLER_SEND_METRICS: "false"
+
+jobs:
+  ci:
+    name: Typecheck, tests, build, CSP, E2E
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: pnpm/action-setup@73e46992e05b19abd31f2f3c20e0e7370d762115 # v6.1.1
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: 22
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - name: Typecheck
+        run: pnpm typecheck
+      - name: Unit + integration tests (workerd + happy-dom)
+        run: pnpm test
+      - name: Build
+        run: pnpm build
+      - name: Install Chromium for Playwright
+        run: pnpm exec playwright install --with-deps chromium
+      - name: Production build under production CSP
+        run: pnpm test:csp
+      - name: E2E (local stack, dev auth bypass)
+        run: |
+          cp .dev.vars.example .dev.vars
+          pnpm db:migrate:local
+          pnpm test:e2e
+
+  deploy:
+    name: Migrate D1 and deploy Worker
+    needs: ci
+    if: github.ref == 'refs/heads/main' && github.event_name != 'pull_request'
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    environment:
+      name: production
+      url: https://brain.ofulano.xyz
+    concurrency:
+      group: production-deploy
+      cancel-in-progress: false
+    env:
+      CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+      CLOUDFLARE_ACCOUNT_ID: ${{ vars.CLOUDFLARE_ACCOUNT_ID }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: pnpm/action-setup@73e46992e05b19abd31f2f3c20e0e7370d762115 # v6.1.1
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: 22
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      # Migrations first: new code never runs against an old schema.
+      # Migrations must therefore stay backward compatible with the running code.
+      - name: Apply pending D1 migrations
+        run: pnpm db:migrate:remote
+      - name: Build and deploy
+        run: pnpm run deploy
