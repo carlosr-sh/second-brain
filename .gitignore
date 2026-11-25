@@ -10,3 +10,5 @@ dist/
 coverage/
 backups/
 .DS_Store
+test-results/
+playwright-report/
