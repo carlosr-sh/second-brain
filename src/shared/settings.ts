@@ -1,4 +1,4 @@
-import { z } from "zod";
+import { z } from "./z";
 
 /**
  * Registry of user preferences stored in the `settings` table.

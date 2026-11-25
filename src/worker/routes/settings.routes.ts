@@ -1,5 +1,5 @@
 import { Hono } from "hono";
-import { z } from "zod";
+import { z } from "../../shared/z";
 import type { ApiSuccess } from "../../shared/api";
 import type { Settings } from "../../shared/settings";
 import { parseJsonBody } from "../lib/validation";

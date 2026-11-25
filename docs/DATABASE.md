@@ -116,7 +116,7 @@ CREATE VIRTUAL TABLE search_index USING fts5(
 -- 24 triggers (AFTER INSERT / AFTER UPDATE OF <colunas relevantes> / AFTER DELETE) em
 -- notes, tasks, projects, areas, goals, resources, bookmarks, books. Cada um remove a
 -- linha antiga do índice e reinsere se deleted_at IS NULL (arquivados continuam pesquisáveis).
--- Diário e contatos entram na Fase 5.
+-- Migração 0002 (Fase 5): journal_entries (título = data + título), contacts, transactions. Total: 33 triggers.
 ```
 
 ⚠️ Limitação: `wrangler d1 export` **não exporta bancos com tabelas virtuais**. Ver `RISKS.md` (R2) —

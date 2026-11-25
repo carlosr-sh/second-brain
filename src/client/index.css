@@ -42,6 +42,18 @@
   --sidebar-accent: oklch(0.925 0.006 85);
   --sidebar-accent-foreground: oklch(0.2 0.008 60);
   --sidebar-border: oklch(0.915 0.005 85);
+
+  /* Data-viz roles (validated with the dataviz skill's validator; see docs/ARCHITECTURE.md §13) */
+  --viz-1: #257de0;          /* categorical slot 1 (blue) */
+  --viz-2: #f47230;          /* categorical slot 2 (orange) — 2.88:1, ships with legend + table view */
+  --viz-grid: #e7e7e7;
+  --viz-axis: #c2c2c2;
+  --viz-ink-2: #666666;
+  /* Sequential (habit heatmap): one hue, light → dark */
+  --viz-seq-0: oklch(0.94 0.006 85);
+  --viz-seq-1: oklch(0.85 0.06 190);
+  --viz-seq-2: oklch(0.65 0.1 190);
+  --viz-seq-3: oklch(0.5 0.1 190);
 }
 
 .dark {
@@ -75,6 +87,16 @@
   --sidebar-accent: oklch(0.245 0.006 270);
   --sidebar-accent-foreground: oklch(0.95 0.004 85);
   --sidebar-border: oklch(0.25 0.005 270);
+
+  --viz-1: #338ced;
+  --viz-2: #e76624;
+  --viz-grid: #303030;
+  --viz-axis: #474747;
+  --viz-ink-2: #9c9c9c;
+  --viz-seq-0: oklch(0.27 0.006 270);
+  --viz-seq-1: oklch(0.38 0.05 190);
+  --viz-seq-2: oklch(0.55 0.09 190);
+  --viz-seq-3: oklch(0.72 0.11 190);
 }
 
 @theme inline {

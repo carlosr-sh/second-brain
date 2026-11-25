@@ -1,4 +1,4 @@
-import { z } from "zod";
+import { z } from "./z";
 import { isoDateSchema } from "./dates";
 import { BOOK_STATUS } from "./enums";
 import { httpUrlSchema } from "./inbox";

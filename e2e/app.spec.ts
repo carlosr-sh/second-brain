@@ -50,8 +50,8 @@ test("command palette navigates with accent-insensitive search", async ({ page }
   await page.keyboard.press("ControlOrMeta+k");
   await page.getByPlaceholder("Ir para… ou digite um comando").fill("financas");
   await page.keyboard.press("Enter");
-  await expect(page).toHaveURL(/\/finance$/);
-  await expect(page.getByText("Ainda não implementado")).toBeVisible();
+  await expect(page).toHaveURL(/\/finance$/); // static match wins over content results
+  await expect(page.getByRole("heading", { name: "Finanças" })).toBeVisible();
 });
 
 test("sidebar collapses with [ right after using the palette, and persists", async ({ page }) => {
@@ -91,8 +91,8 @@ test("shortcut help, 404 and deep-link SPA fallback", async ({ page }) => {
   await page.keyboard.press("Escape");
   await page.goto("/rota/inexistente");
   await expect(page.getByText("Página não encontrada")).toBeVisible();
-  await page.goto("/journal/qualquer-coisa"); // module still a placeholder (Phase 5)
-  await expect(page.getByRole("heading", { name: "Diário" })).toBeVisible();
+  await page.goto("/journal/qualquer-coisa"); // invalid day → redirected to today
+  await expect(page).toHaveURL(/\/journal\/\d{4}-\d{2}-\d{2}$/);
   await page.goto("/notes/nao-e-um-uuid"); // invalid id: "not found" without hitting the API
   await expect(page.getByText("Nota não encontrada")).toBeVisible();
 });

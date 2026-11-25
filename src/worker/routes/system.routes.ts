@@ -1,5 +1,5 @@
 import { Hono } from "hono";
-import { z } from "zod";
+import { z } from "../../shared/z";
 import type { ApiSuccess, AuditLogEntry, IntegrityCheckResponse, MeResponse, SystemStatusResponse } from "../../shared/api";
 import { requestMeta } from "../lib/request-meta";
 import type { AppEnv } from "../types";

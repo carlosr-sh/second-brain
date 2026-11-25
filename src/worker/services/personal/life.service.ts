@@ -101,10 +101,16 @@ export class JournalService {
     return (await this.repo.list(from, to)).map((r) => ({ id: r.id, date: r.date, title: r.title, excerpt: r.excerpt, mood: r.mood, energy: r.energy }));
   }
 
-  async get(date: string): Promise<JournalEntry> {
+  /** An empty day is a normal state (not an error): returns null. */
+  async find(date: string): Promise<JournalEntry | null> {
     const row = await this.repo.findByDate(date);
-    if (!row) throw notFound("Sem registro neste dia");
-    return toJournalDto(row);
+    return row ? toJournalDto(row) : null;
+  }
+
+  async get(date: string): Promise<JournalEntry> {
+    const entry = await this.find(date);
+    if (!entry) throw notFound("Sem registro neste dia");
+    return entry;
   }
 
   /** One live entry per day: creates it on first save, updates afterwards. */

@@ -1,4 +1,4 @@
-import { z } from "zod";
+import { z } from "./z";
 
 /** Money is ALWAYS integer cents. Floats are never used for amounts. */
 export const MAX_CENTS = 1_000_000_000_00; // R$ 1 bilhão: sanity bound for a personal app

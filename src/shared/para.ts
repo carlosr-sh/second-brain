@@ -1,4 +1,4 @@
-import { z } from "zod";
+import { z } from "./z";
 import { isoDateSchema } from "./dates";
 import { GOAL_HORIZON, GOAL_STATUS, PRIORITY, PROJECT_STATUS, TASK_STATUS } from "./enums";
 import { recurrenceRuleSchema } from "./recurrence";

@@ -89,7 +89,7 @@ export const journalRoutes = new Hono<AppEnv>()
     const { from, to } = journalListQuerySchema.parse(c.req.query());
     return ok(c, await s(c).journal.list(from, to));
   })
-  .get("/:date", async (c) => ok(c, await s(c).journal.get(dateOf(c))))
+  .get("/:date", async (c) => ok(c, await s(c).journal.find(dateOf(c))))
   .put("/:date", async (c) => ok(c, await s(c).journal.upsert(dateOf(c), await parseJsonBody(c, upsertJournalSchema))));
 /** By-id operations (trash/restore), consistent with ENTITY_PATH.journal = "journals". */
 export const journalByIdRoutes = new Hono<AppEnv>()

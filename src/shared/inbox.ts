@@ -1,4 +1,4 @@
-import { z } from "zod";
+import { z } from "./z";
 
 /** Only http(s) links are accepted: blocks `javascript:` / `data:` URLs (XSS when rendered). */
 export const httpUrlSchema = z

@@ -1,4 +1,4 @@
-import { z } from "zod";
+import { z } from "./z";
 import { UUID_REGEX } from "./uuid";
 
 /**

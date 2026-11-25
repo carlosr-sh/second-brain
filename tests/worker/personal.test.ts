@@ -146,7 +146,7 @@ describe("journal", () => {
     expect(results[0]?.title.replace(/[\u0002\u0003]/g, "")).toMatch(/^2026-11-20/);
 
     await api.ok("DELETE", `/api/journals/${e1.id}`);
-    expect((await api.req("GET", `/api/journal/${d}`)).status).toBe(404);
+    expect(await api.ok("GET", `/api/journal/${d}`)).toBeNull(); // empty day = 200 null, not 404
     const fresh = await api.ok<JournalEntry>("PUT", `/api/journal/${d}`, { content: doc("novo") });
     expect(fresh.id).not.toBe(e1.id);
     expect(await code(await api.req("POST", `/api/journals/${e1.id}/restore`))).toBe("CONFLICT"); // day taken

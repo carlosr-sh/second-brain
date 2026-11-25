@@ -1,4 +1,4 @@
-import { z } from "zod";
+import { z } from "./z";
 import { ISO_DATE_REGEX } from "./constants";
 
 /** Pure calendar-date arithmetic on `YYYY-MM-DD` strings (no timezone involved). */

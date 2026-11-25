@@ -1,4 +1,4 @@
-import { z } from "zod";
+import { z } from "./z";
 import { addDays, addMonths, isoWeekday, parseIsoDate } from "./dates";
 
 /**

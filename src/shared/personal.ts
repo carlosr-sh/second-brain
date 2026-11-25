@@ -1,4 +1,4 @@
-import { z } from "zod";
+import { z } from "./z";
 import { isoDateSchema } from "./dates";
 import { ACCOUNT_TYPE, CATEGORY_KIND, CONTACT_RELATIONSHIP, HABIT_FREQUENCY, INTERACTION_TYPE, TRANSACTION_STATUS } from "./enums";
 import { amountCentsSchema, signedCentsSchema } from "./money";

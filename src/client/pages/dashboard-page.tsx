@@ -1,4 +1,8 @@
-import { ArrowRightIcon, FolderKanbanIcon, InboxIcon, StickyNoteIcon, SunIcon } from "lucide-react";
+import { ArrowRightIcon, FlameIcon, FolderKanbanIcon, InboxIcon, LandmarkIcon, StickyNoteIcon, SunIcon } from "lucide-react";
+import { formatBRL } from "@shared/money";
+import { isoDateIn } from "@shared/time";
+import { Checkbox } from "@/components/ui/checkbox";
+import { useAccounts, useHabitLog, useHabits, useMonthlySummary } from "@/features/personal/queries";
 import { useEffect, useState, type FormEvent } from "react";
 import { Link } from "react-router";
 import { toast } from "sonner";
@@ -126,6 +130,59 @@ function RecentNotesWidget() {
   );
 }
 
+function HabitsTodayWidget() {
+  const habits = useHabits();
+  const log = useHabitLog();
+  const today = isoDateIn(new Date());
+  const list = habits.data ?? [];
+  return (
+    <Card data-testid="habits-widget">
+      <CardHeader>
+        <CardTitle className="flex items-center gap-2"><FlameIcon className="size-4" /> Hábitos de hoje</CardTitle>
+        <Link to="/habits" className="text-xs text-brand hover:underline">Ver todos</Link>
+      </CardHeader>
+      <CardContent className="space-y-1">
+        {habits.isPending ? <Skeleton className="h-16" /> : list.length ? list.slice(0, 6).map((h) => {
+          const count = h.logs.find((l) => l.date === today)?.count ?? 0;
+          const done = h.frequency === "daily" ? count >= h.targetCount : count > 0;
+          return (
+            <label key={h.id} className="flex cursor-pointer items-center gap-2 rounded-md px-1 py-1 hover:bg-accent/50">
+              <Checkbox checked={done} onCheckedChange={(v) => log.mutate({ id: h.id, date: today, count: v ? Math.max(1, h.frequency === "daily" ? h.targetCount : 1) : 0 })} aria-label={`${h.name} feito hoje`} />
+              <span className={done ? "text-muted-foreground line-through" : ""}>{h.name}</span>
+              {h.stats.currentStreak > 0 && <span className="ml-auto inline-flex items-center gap-0.5 text-xs text-muted-foreground tabular-nums"><FlameIcon className="size-3 text-brand" />{h.stats.currentStreak}</span>}
+            </label>
+          );
+        }) : <p className="text-muted-foreground">Nenhum hábito ainda.</p>}
+      </CardContent>
+    </Card>
+  );
+}
+
+function FinanceMonthWidget() {
+  const summary = useMonthlySummary(1);
+  const accounts = useAccounts();
+  const m = summary.data?.[0];
+  const total = (accounts.data ?? []).reduce((s, a) => s + a.balanceCents, 0);
+  return (
+    <Card>
+      <CardHeader>
+        <CardTitle className="flex items-center gap-2"><LandmarkIcon className="size-4" /> Mês financeiro</CardTitle>
+        <Link to="/finance" className="text-xs text-brand hover:underline">Detalhes</Link>
+      </CardHeader>
+      <CardContent>
+        {summary.isPending || accounts.isPending ? <Skeleton className="h-16" /> : !accounts.data?.length ? <p className="text-muted-foreground">Nenhuma conta criada.</p> : (
+          <dl className="grid grid-cols-2 gap-y-1 text-sm">
+            <dt className="text-muted-foreground">Saldo total</dt><dd className="text-right font-semibold tabular-nums">{formatBRL(total)}</dd>
+            <dt className="text-muted-foreground">Receitas</dt><dd className="text-right tabular-nums">{formatBRL(m?.incomeCents ?? 0)}</dd>
+            <dt className="text-muted-foreground">Despesas</dt><dd className="text-right tabular-nums">{formatBRL(m?.expenseCents ?? 0)}</dd>
+            <dt className="text-muted-foreground">Resultado</dt><dd className="text-right font-medium tabular-nums">{formatBRL(m?.netCents ?? 0)}</dd>
+          </dl>
+        )}
+      </CardContent>
+    </Card>
+  );
+}
+
 function ActiveProjectsWidget() {
   const projects = useProjects({ status: "active" });
   return (
@@ -168,6 +225,8 @@ export function DashboardPage() {
         <ActiveProjectsWidget />
         <InboxWidget />
         <RecentNotesWidget />
+        <HabitsTodayWidget />
+        <FinanceMonthWidget />
       </div>
     </Page>
   );

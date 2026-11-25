@@ -213,3 +213,16 @@ Regras de negócio ficam nos **serviços** (`src/worker/services/*.service.ts`) 
   `GET /api/files/:id` responde em streaming do R2 com CSP `sandbox`.
 * **Front**: as dependências pesadas do editor ficam no chunk da página de Notas (143 KB gzip, carregado sob
   demanda). O autosave usa debounce de 700 ms e envia o pendente ao trocar de nota ou fechar a aba (com `keepalive`).
+
+## 13. Gestão pessoal (Fase 5)
+
+* **Dinheiro**: centavos inteiros de ponta a ponta; `parseBRL` (aritmética de strings) e `formatBRL` em `src/shared/money.ts`.
+  O sinal é aplicado no serviço; saldos e relatórios são **derivados** por SQL (nunca armazenados).
+* **Transferências**: duas linhas com `transfer_group_id`, toda escrita via `db.batch` (`TransactionRepository.insertTransfer/updateLegs`).
+* **Hábitos**: estatísticas calculadas no servidor com funções puras (`src/shared/habits.ts`), testadas em isolamento.
+* **Diário**: upsert por data (índice único parcial), reaproveita o editor e o validador de documento rico.
+* **Zod e CSP**: todo código importa `z` de `src/shared/z.ts`, que liga `jitless` antes de qualquer schema existir
+  (dependência de módulo = ordem garantida). Teste de guarda em `tests/tooling/zod-import.test.ts`.
+* **Gráficos**: Recharts em chunk sob demanda; tokens `--viz-*` por tema em `index.css`, paleta validada com o script da
+  skill `dataviz`; toda visualização tem legenda (≥ 2 séries), tooltip e visão em tabela.
+* **Autosave genérico** (`features/knowledge/use-autosave.ts`): recebe a função de envio (notas, diário).

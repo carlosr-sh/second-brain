@@ -5,7 +5,7 @@ import {
 import { useMemo, useState } from "react";
 import { Link, useNavigate, useParams, useSearchParams } from "react-router";
 import { toast } from "sonner";
-import type { Note } from "@shared/knowledge";
+import type { Note, UpdateNoteInput } from "@shared/knowledge";
 import { UUID_REGEX } from "@shared/uuid";
 import { EmptyState } from "@/components/empty-state";
 import { Button } from "@/components/ui/button";
@@ -130,7 +130,8 @@ function NoteView({ id }: { id: string }) {
 }
 
 function NoteDetail({ note }: { note: Note }) {
-  const { queue, flush, status } = useAutosave(note.id);
+  const saveAsync = useSaveNote().mutateAsync;
+  const { queue, flush, status } = useAutosave<UpdateNoteInput>(note.id, (patch, { keepalive }) => saveAsync({ id: note.id, ...patch, keepalive }));
   const [title, setTitle] = useState(note.title);
   const save = useSaveNote();
   const trash = useTrashKb();

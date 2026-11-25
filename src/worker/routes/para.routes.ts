@@ -1,5 +1,5 @@
 import { Hono, type Context } from "hono";
-import { z } from "zod";
+import { z } from "../../shared/z";
 import type { ApiSuccess } from "../../shared/api";
 import { PROJECT_STATUS } from "../../shared/enums";
 import {
