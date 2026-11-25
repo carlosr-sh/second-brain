@@ -35,9 +35,9 @@ responde 500 em todas as rotas (fail closed) e loga **quais campos** estão inv�
    ```
 2. **Criar o banco D1** e copiar o `database_id` retornado para `wrangler.jsonc`
    ```bash
-   pnpm exec wrangler d1 create second-brain --location sam
+   pnpm exec wrangler d1 create second-brain --location enam
    ```
-   (`sam` = América do Sul, mais próximo de Recife.)
+   (Não existe região sul-americana para D1; as opções são `weur`, `eeur`, `apac`, `oc`, `wnam`, `enam`. `enam` (leste da América do Norte) é a mais próxima de Recife em rota de rede.)
 3. **Criar o bucket R2** (privado por padrão — não habilite acesso público nem `r2.dev`)
    ```bash
    pnpm exec wrangler r2 bucket create second-brain-files

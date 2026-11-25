@@ -14,7 +14,7 @@
 | R10 | Scripts injetados pela Cloudflare (Rocket Loader, Email Obfuscation, Analytics) | Bloqueados pela CSP, podem quebrar a página | Desativar no hostname (ver `INFRASTRUCTURE.md`) |
 | R11 | Desnormalizações deliberadas (`content_text`, `note_links`, futura `search_index`) | Divergência se alguém gravar fora do serviço | Escrita só via serviço; job de integridade recalcula e compara |
 | R12 | Ecossistema em movimento: `vitest-pool-workers` foi **renomeado** para `@cloudflare/vitest-plugin` durante este trabalho; Vite 8/Vitest 5 são recentes | Quebras em atualizações | Versões travadas no `pnpm-lock.yaml`; atualizações em PR com suíte completa |
-| R13 | Banco único em uma região primária | Latência maior longe da região | `--location sam`; D1 read replication se necessário (uso single-user é leve) |
+| R13 | Banco único em uma região primária | Latência maior longe da região | `--location enam` (não há região sul-americana); D1 read replication se necessário (uso single-user é leve) |
 | R14 | Dependência do Access como fronteira principal | Política mal configurada exporia o app | Validação própria do JWT + checagem do e-mail + auditoria de identidade não autorizada |
 | R15 | Perda do container de desenvolvimento (efêmero) | Commits locais se perdem se a sessão acabar | Repositório `carlosr-sh/second-brain` criado; **push bloqueado até instalar o Claude GitHub App** |
 | R16 | Bibliotecas que usam `eval`/`new Function` violam a CSP de produção (caso real: probe JIT do Zod 4) | Funciona em dev, quebra ou polui relatórios em produção | `z.config({ jitless: true })`; `pnpm test:csp` testa o build real sob a CSP real; obrigatório para novas dependências |
