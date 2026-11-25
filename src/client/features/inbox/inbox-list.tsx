@@ -1,16 +1,18 @@
-import { CheckIcon, ExternalLinkIcon, RotateCcwIcon, Trash2Icon } from "lucide-react";
+import { CheckIcon, CheckSquareIcon, ExternalLinkIcon, RotateCcwIcon, Trash2Icon } from "lucide-react";
 import { toast } from "sonner";
 import type { InboxItem } from "@shared/inbox";
 import { Button } from "@/components/ui/button";
 import { Hint } from "@/components/ui/tooltip";
 import { formatDateTime, formatRelative } from "@/lib/format";
 import { cn } from "@/lib/utils";
+import { useTaskEditor } from "@/features/tasks/task-editor-context";
 import { useSetInboxProcessed, useTrashInbox } from "./hooks";
 
 function InboxRow({ item, compact }: { item: InboxItem; compact?: boolean }) {
   const setProcessed = useSetInboxProcessed();
   const trash = useTrashInbox();
   const processed = item.processedAt !== null;
+  const { openConvert } = useTaskEditor();
 
   return (
     <li className="group flex items-start gap-3 px-4 py-3" data-testid="inbox-item">
@@ -32,6 +34,13 @@ function InboxRow({ item, compact }: { item: InboxItem; compact?: boolean }) {
       </div>
       {!compact && (
         <div className="flex shrink-0 gap-1 opacity-100 transition-opacity sm:opacity-0 sm:group-focus-within:opacity-100 sm:group-hover:opacity-100">
+          {!processed && (
+            <Hint label="Converter em tarefa">
+              <Button variant="ghost" size="icon-sm" aria-label="Converter em tarefa" onClick={() => openConvert(item.id, { title: item.content.slice(0, 200), notes: item.content.length > 200 || item.url ? item.content + (item.url && item.url !== item.content ? `\n${item.url}` : "") : null })}>
+                <CheckSquareIcon />
+              </Button>
+            </Hint>
+          )}
           <Hint label={processed ? "Reabrir" : "Marcar como processado"}>
             <Button
               variant="ghost"

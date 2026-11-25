@@ -4,6 +4,7 @@ import { ALL_MODULES } from "@/app/navigation";
 export const GLOBAL_SHORTCUTS = [
   { keys: "mod+k", label: "Buscar e comandos" },
   { keys: "c", label: "Captura rápida" },
+  { keys: "n", label: "Nova tarefa" },
   { keys: "[", label: "Recolher / expandir barra lateral" },
   { keys: "?", label: "Mostrar atalhos" },
   { keys: "mod+enter", label: "Salvar (em formulários)" },

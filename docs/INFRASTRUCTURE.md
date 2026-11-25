@@ -108,7 +108,7 @@ pnpm db:migrate:local
 ```bash
 pnpm dev
 ```
-O estado local de D1/R2 fica em `.wrangler/state` (ignorado pelo git).
+O estado local de D1/R2 fica em `.wrangler/state` (ignorado pelo git). O banco local é indexado pelo `database_id`: se ele mudar no `wrangler.jsonc`, um banco local **novo e vazio** é criado e é preciso rodar `pnpm db:migrate:local` de novo (sintoma: `no such table` / erro 500 em dev).
 
 ## 5. Comandos
 

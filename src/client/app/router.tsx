@@ -13,6 +13,13 @@ import { NAV_GROUPS, type NavModule } from "./navigation";
 const DashboardPage = lazy(() => import("@/pages/dashboard-page").then((m) => ({ default: m.DashboardPage })));
 const InboxPage = lazy(() => import("@/pages/inbox-page").then((m) => ({ default: m.InboxPage })));
 const SettingsPage = lazy(() => import("@/pages/settings-page").then((m) => ({ default: m.SettingsPage })));
+const TasksPage = lazy(() => import("@/pages/tasks-page").then((m) => ({ default: m.TasksPage })));
+const ProjectsPage = lazy(() => import("@/pages/projects-page").then((m) => ({ default: m.ProjectsPage })));
+const ProjectDetailPage = lazy(() => import("@/pages/project-detail-page").then((m) => ({ default: m.ProjectDetailPage })));
+const AreasPage = lazy(() => import("@/pages/areas-page").then((m) => ({ default: m.AreasPage })));
+const AreaDetailPage = lazy(() => import("@/pages/area-detail-page").then((m) => ({ default: m.AreaDetailPage })));
+const GoalsPage = lazy(() => import("@/pages/goals-page").then((m) => ({ default: m.GoalsPage })));
+const ArchivePage = lazy(() => import("@/pages/archive-page").then((m) => ({ default: m.ArchivePage })));
 const ModulePlaceholderPage = lazy(() =>
   import("@/pages/module-placeholder-page").then((m) => ({ default: m.ModulePlaceholderPage })),
 );
@@ -20,7 +27,18 @@ const ModulePlaceholderPage = lazy(() =>
 const IMPLEMENTED: Record<string, LazyExoticComponent<ComponentType>> = {
   dashboard: DashboardPage,
   inbox: InboxPage,
+  tasks: TasksPage,
+  projects: ProjectsPage,
+  areas: AreasPage,
+  goals: GoalsPage,
+  archive: ArchivePage,
 };
+
+/** Detail routes nested under a module path. */
+const detailRoutes = (): RouteObject[] => [
+  { path: "projects/:id", element: withSuspense(<ProjectDetailPage />) },
+  { path: "areas/:id", element: withSuspense(<AreaDetailPage />) },
+];
 
 function PageFallback() {
   return (
@@ -39,7 +57,7 @@ function moduleElement(m: NavModule) {
 }
 
 const moduleRoutes: RouteObject[] = NAV_GROUPS.flatMap((g) => g.modules).map((m) =>
-  m.path === "/" ? { index: true, element: moduleElement(m) } : { path: `${m.path.slice(1)}/*`, element: moduleElement(m) },
+  m.path === "/" ? { index: true, element: moduleElement(m) } : { path: IMPLEMENTED[m.id] ? m.path.slice(1) : `${m.path.slice(1)}/*`, element: moduleElement(m) },
 );
 
 export const routes: RouteObject[] = [
@@ -50,7 +68,7 @@ export const routes: RouteObject[] = [
     children: [
       {
         errorElement: <RouteErrorPage />,
-        children: [...moduleRoutes, { path: "settings", element: withSuspense(<SettingsPage />) }, { path: "*", element: <NotFoundPage /> }],
+        children: [...moduleRoutes, ...detailRoutes(), { path: "settings", element: withSuspense(<SettingsPage />) }, { path: "*", element: <NotFoundPage /> }],
       },
     ],
   },

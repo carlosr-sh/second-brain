@@ -26,7 +26,7 @@ export function InboxPage() {
     <Page>
       <PageHeader
         title="Inbox"
-        description="Tudo o que você capturou e ainda não organizou. Na Fase 3, cada item poderá virar tarefa, nota ou projeto."
+        description="Tudo o que você capturou e ainda não organizou. Transforme cada item em tarefa, ou marque como processado."
         actions={
           <Button variant="brand" size="sm" onClick={() => setCaptureOpen(true)}>
             <PlusIcon /> Capturar

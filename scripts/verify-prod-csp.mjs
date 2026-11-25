@@ -41,7 +41,8 @@ const server = http.createServer((req, res) => {
   res.setHeader("Content-Security-Policy", csp);
   if (req.url.startsWith("/api/")) {
     res.setHeader("content-type", "application/json");
-    return res.end(JSON.stringify({ data: stub[req.url] ?? null }));
+    const listLike = /^\/api\/(tasks|projects|areas|goals|trash)(\?|$)/.test(req.url);
+    return res.end(JSON.stringify({ data: stub[req.url] ?? (listLike ? [] : null) }));
   }
   let file = path.join(root, decodeURIComponent(req.url.split("?")[0]));
   if (!file.startsWith(root) || !fs.existsSync(file) || fs.statSync(file).isDirectory()) file = path.join(root, "index.html");
@@ -60,7 +61,7 @@ try {
   await page.addInitScript(() =>
     document.addEventListener("securitypolicyviolation", (e) => console.error(`CSP violation: ${e.violatedDirective} ${e.blockedURI}`)),
   );
-  for (const route of ["/", "/inbox", "/settings", "/tasks", "/nao-existe"]) {
+  for (const route of ["/", "/inbox", "/settings", "/tasks", "/tasks?view=board", "/tasks?view=calendar", "/tasks?view=table", "/projects", "/areas", "/goals", "/archive", "/archive?tab=trash", "/nao-existe"]) {
     await page.goto(base + route, { waitUntil: "networkidle" });
   }
   await page.keyboard.press("Control+k");

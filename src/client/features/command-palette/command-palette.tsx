@@ -1,4 +1,4 @@
-import { KeyboardIcon, MonitorIcon, MoonIcon, PanelLeftIcon, PlusIcon, SunIcon } from "lucide-react";
+import { CheckSquareIcon, KeyboardIcon, MonitorIcon, MoonIcon, PanelLeftIcon, PlusIcon, SunIcon } from "lucide-react";
 import { useNavigate } from "react-router";
 import {
   CommandDialog,
@@ -14,6 +14,7 @@ import { ALL_MODULES } from "@/app/navigation";
 import { useUiState } from "@/app/ui-state";
 import { KeysHint } from "@/features/shortcuts/keys-hint";
 import { useTheme } from "@/features/theme/theme-provider";
+import { useTaskEditor } from "@/features/tasks/task-editor-context";
 import { commandFilter } from "@/lib/search-filter";
 
 /**
@@ -23,6 +24,7 @@ import { commandFilter } from "@/lib/search-filter";
 export function CommandPalette({ onToggleSidebar }: { onToggleSidebar: () => void }) {
   const { paletteOpen, setPaletteOpen, setCaptureOpen, setShortcutsOpen } = useUiState();
   const { setPreference } = useTheme();
+  const { openNew } = useTaskEditor();
   const navigate = useNavigate();
 
   const run = (fn: () => void) => () => {
@@ -40,6 +42,10 @@ export function CommandPalette({ onToggleSidebar }: { onToggleSidebar: () => voi
             <CommandItem value="Captura rápida" onSelect={run(() => setCaptureOpen(true))} keywords={["nova", "inbox", "adicionar", "capture"]}>
               <PlusIcon /> Captura rápida
               <CommandShortcut><KeysHint keys="c" /></CommandShortcut>
+            </CommandItem>
+            <CommandItem value="Nova tarefa" onSelect={run(() => openNew())} keywords={["criar", "task", "todo", "adicionar"]}>
+              <CheckSquareIcon /> Nova tarefa
+              <CommandShortcut><KeysHint keys="n" /></CommandShortcut>
             </CommandItem>
             <CommandItem value="Recolher expandir barra lateral" onSelect={run(onToggleSidebar)} keywords={["sidebar", "menu", "barra"]}>
               <PanelLeftIcon /> Recolher / expandir barra lateral

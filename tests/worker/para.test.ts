@@ -94,6 +94,8 @@ describe("tasks", () => {
     expect(await code(await api.req("PATCH", `/api/tasks/${parent.id}`, { parentTaskId: other.id }))).toBe("CONFLICT");
     expect(await code(await api.req("PATCH", `/api/tasks/${parent.id}`, { parentTaskId: parent.id }))).toBe("CONFLICT");
 
+    expect((await api.ok<Task[]>("GET", `/api/tasks?parentTaskId=${parent.id}`)).map((t) => t.id)).toEqual([child.id]);
+
     await api.ok("PATCH", `/api/tasks/${parent.id}`, { projectId: p2.id });
     expect((await api.ok<Task>("GET", `/api/tasks/${child.id}`)).projectId).toBe(p2.id);
   });

@@ -27,6 +27,7 @@ export class TaskRepository {
     if (q.status?.length) where.push(inArray(tasks.status, q.status));
     if (q.dueFrom) where.push(gte(tasks.dueDate, q.dueFrom));
     if (q.dueTo) where.push(lte(tasks.dueDate, q.dueTo));
+    if (q.parentTaskId) where.push(eq(tasks.parentTaskId, q.parentTaskId));
     if (q.unassigned) where.push(isNull(tasks.projectId), isNull(tasks.areaId));
     return this.db.select().from(tasks).where(and(...where)).orderBy(asc(tasks.position), asc(tasks.createdAt)).limit(limit);
   }

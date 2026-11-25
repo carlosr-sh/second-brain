@@ -3,7 +3,7 @@
 Sistema pessoal e privado de gestão de conhecimento (PARA), rodando inteiramente na Cloudflare
 (Workers + D1 + R2 + Access).
 
-**Status:** Fases 1 (infraestrutura e autenticação) e 2 (design system e navegação) concluídas localmente — ver `docs/PHASE-1-REPORT.md` e `docs/PHASE-2-REPORT.md`.
+**Status:** Fases 1 a 3 concluídas e em produção (`https://brain.ofulano.xyz`, protegido por Cloudflare Access). Relatórios em `docs/PHASE-*-REPORT.md`.
 
 ## Início rápido
 
@@ -41,3 +41,4 @@ pnpm build && pnpm test:csp
 | [docs/RISKS.md](docs/RISKS.md) | Riscos técnicos e mitigação |
 | [docs/PHASE-1-REPORT.md](docs/PHASE-1-REPORT.md) | Fase 1: entregue, testado, pendente |
 | [docs/PHASE-2-REPORT.md](docs/PHASE-2-REPORT.md) | Fase 2: entregue, bugs encontrados, pendente |
+| [docs/PHASE-3-REPORT.md](docs/PHASE-3-REPORT.md) | Fase 3: PARA core, regras de negócio, bugs encontrados |

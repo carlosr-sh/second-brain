@@ -182,3 +182,20 @@ main.tsx → Providers (QueryClient → Theme → Tooltip → UiState → Sessio
 | ? | Ajuda de atalhos |
 | G → H/I/P/A/R/X/T/M/B/N/L/J/F/C/S | Ir para módulo |
 | ⌘/Ctrl + Enter | Salvar formulário |
+
+## 11. PARA core (Fase 3)
+
+Regras de negócio ficam nos **serviços** (`src/worker/services/*.service.ts`) e estão listadas em
+`docs/PHASE-3-REPORT.md` §2. Pontos de arquitetura:
+
+* **Estatísticas derivadas, nunca armazenadas**: projetos ativos por área, tarefas abertas, progresso de
+  metas e de projetos vêm de subconsultas correlacionadas. Atenção: referências à tabela externa devem ser
+  **qualificadas** (`sql.raw("areas.id")`); sem isso o SQLite resolve `"id"` para a tabela interna, em silêncio.
+* **Operações multi-linha atômicas** com `db.batch()` (D1 não tem transações interativas): cascata projeto→tarefas,
+  recorrência, Inbox→tarefa.
+* **Ordenação fracionária**: `position REAL`; soltar entre A e B grava `(A+B)/2`, ou seja, uma linha por movimento.
+* **Front**: TanStack Query com chaves em `features/para/queries.ts`. Listas ficam sob `["para","tasks"|"projects"|...]`
+  e itens únicos sob `["para","task"|"project"|"area", id]`. Toda escrita no PARA invalida `["para"]`, porque as
+  estatísticas são derivadas no servidor. Efeitos que precisam acontecer sempre (avisos, rollback) ficam nos
+  callbacks do **hook**, não nos de `mutate()`.
+* **Kanban genérico** (`components/kanban-board.tsx`, dnd-kit), usado por tarefas e projetos; carregado sob demanda.

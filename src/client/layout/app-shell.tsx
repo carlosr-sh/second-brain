@@ -8,15 +8,26 @@ import type { ShortcutBinding } from "@/features/shortcuts/engine";
 import { NAVIGATION_SHORTCUTS } from "@/features/shortcuts/global-shortcuts";
 import { ShortcutsDialog } from "@/features/shortcuts/shortcuts-dialog";
 import { useShortcuts } from "@/features/shortcuts/use-shortcuts";
+import { TaskEditorDialog } from "@/features/tasks/task-editor-dialog";
+import { TaskEditorProvider, useTaskEditor } from "@/features/tasks/task-editor-context";
 import { MobileTopbar } from "./mobile-topbar";
 import { Sidebar } from "./sidebar";
 import { useSidebarCollapsed } from "./use-sidebar";
 
 export function AppShell() {
+  return (
+    <TaskEditorProvider>
+      <Shell />
+    </TaskEditorProvider>
+  );
+}
+
+function Shell() {
+  const { target: editorTarget, openNew } = useTaskEditor();
   const [collapsed, toggleSidebar] = useSidebarCollapsed();
   const { setPaletteOpen, setCaptureOpen, setShortcutsOpen, paletteOpen, captureOpen } = useUiState();
   const navigate = useNavigate();
-  const dialogOpen = paletteOpen || captureOpen;
+  const dialogOpen = paletteOpen || captureOpen || editorTarget !== null;
 
   const bindings = useMemo<ShortcutBinding[]>(
     () => [
@@ -25,12 +36,13 @@ export function AppShell() {
         ? []
         : [
             { id: "capture", keys: "c", run: () => setCaptureOpen(true) },
+            { id: "new-task", keys: "n", run: () => openNew() },
             { id: "sidebar", keys: "[", run: toggleSidebar },
             { id: "help", keys: "?", run: () => setShortcutsOpen(true) },
             ...NAVIGATION_SHORTCUTS.map((s) => ({ id: `nav:${s.path}`, keys: s.keys, run: () => navigate(s.path) })),
           ]),
     ],
-    [dialogOpen, navigate, setCaptureOpen, setPaletteOpen, setShortcutsOpen, toggleSidebar],
+    [dialogOpen, navigate, openNew, setCaptureOpen, setPaletteOpen, setShortcutsOpen, toggleSidebar],
   );
   useShortcuts(bindings);
 
@@ -48,6 +60,7 @@ export function AppShell() {
       </div>
       <CommandPalette onToggleSidebar={toggleSidebar} />
       <QuickCaptureDialog />
+      <TaskEditorDialog />
       <ShortcutsDialog />
       <Toaster />
     </div>

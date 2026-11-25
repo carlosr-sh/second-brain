@@ -1,4 +1,4 @@
-import { ArrowRightIcon, InboxIcon, SparklesIcon } from "lucide-react";
+import { ArrowRightIcon, FolderKanbanIcon, InboxIcon, SunIcon } from "lucide-react";
 import { useEffect, useState, type FormEvent } from "react";
 import { Link } from "react-router";
 import { toast } from "sonner";
@@ -8,12 +8,17 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Skeleton } from "@/components/ui/skeleton";
-import { NAV_GROUPS } from "@/app/navigation";
 import { useCaptureInbox, useInboxCount, useInboxItems } from "@/features/inbox/hooks";
 import { InboxList } from "@/features/inbox/inbox-list";
 import { splitCapture } from "@/features/inbox/quick-capture-dialog";
 import { KeysHint } from "@/features/shortcuts/keys-hint";
 import { useSystemStatus } from "@/features/system/hooks";
+import { OPEN_TASK_STATUSES } from "@/features/para/labels";
+import { useProjects, useTasks } from "@/features/para/queries";
+import { useToday } from "@/features/para/use-today";
+import { QuickAddTask } from "@/features/tasks/quick-add-task";
+import { TaskRow } from "@/features/tasks/task-row";
+import { Progress } from "@/components/ui/progress";
 import { Page } from "@/layout/page";
 import { formatLongDate } from "@/lib/format";
 
@@ -102,20 +107,50 @@ function SystemWidget() {
   );
 }
 
-function ComingNextWidget() {
-  const upcoming = NAV_GROUPS.flatMap((g) => g.modules).filter((m) => m.phase === 3);
+function TodayWidget() {
+  const today = useToday();
+  const tasks = useTasks({ status: OPEN_TASK_STATUSES.join(","), dueTo: today });
+  const list = tasks.data ?? [];
+  const overdue = list.filter((t) => t.dueDate! < today).length;
+  return (
+    <Card className="md:col-span-2" data-testid="today-widget">
+      <CardHeader>
+        <CardTitle className="flex items-center gap-2">
+          <SunIcon className="size-4" /> Hoje
+          {overdue > 0 && <Badge variant="outline" className="text-destructive">{overdue} atrasada(s)</Badge>}
+        </CardTitle>
+        <Button variant="ghost" size="sm" asChild><Link to="/tasks">Tarefas <ArrowRightIcon /></Link></Button>
+      </CardHeader>
+      <CardContent className="-mx-2">
+        {tasks.isPending ? <Skeleton className="h-24" /> : list.length ? (
+          <ul className="divide-y">{list.slice(0, 8).map((t) => <TaskRow key={t.id} task={t} />)}</ul>
+        ) : (
+          <p className="px-2 text-muted-foreground">Nada vencendo hoje.</p>
+        )}
+        <QuickAddTask defaults={{ dueDate: today }} placeholder="Adicionar para hoje…" />
+      </CardContent>
+    </Card>
+  );
+}
+
+function ActiveProjectsWidget() {
+  const projects = useProjects({ status: "active" });
   return (
     <Card>
       <CardHeader>
-        <CardTitle className="flex items-center gap-2"><SparklesIcon className="size-4" /> Próxima fase</CardTitle>
+        <CardTitle className="flex items-center gap-2"><FolderKanbanIcon className="size-4" /> Projetos ativos</CardTitle>
+        <Link to="/projects" className="text-xs text-brand hover:underline">Ver todos</Link>
       </CardHeader>
-      <CardContent className="space-y-2 text-muted-foreground">
-        <p>Widgets de tarefas, metas, hábitos e finanças aparecem aqui conforme os módulos forem entregues.</p>
-        <div className="flex flex-wrap gap-1.5">
-          {upcoming.map((m) => (
-            <Badge key={m.id} variant="outline"><m.icon /> {m.label}</Badge>
-          ))}
-        </div>
+      <CardContent className="space-y-3">
+        {projects.isPending ? <Skeleton className="h-16" /> : projects.data?.length ? projects.data.slice(0, 5).map((p) => {
+          const total = p.taskStats.open + p.taskStats.done;
+          return (
+            <Link key={p.id} to={`/projects/${p.id}`} className="block space-y-1.5 hover:underline">
+              <span className="block truncate">{p.name}</span>
+              {total > 0 && <Progress value={p.taskStats.done} max={total} label={`Progresso de ${p.name}`} />}
+            </Link>
+          );
+        }) : <p className="text-muted-foreground">Nenhum projeto ativo.</p>}
       </CardContent>
     </Card>
   );
@@ -136,11 +171,10 @@ export function DashboardPage() {
         </p>
       </div>
       <div className="grid gap-4 md:grid-cols-3">
+        <TodayWidget />
+        <ActiveProjectsWidget />
         <InboxWidget />
-        <div className="grid gap-4">
-          <SystemWidget />
-          <ComingNextWidget />
-        </div>
+        <SystemWidget />
       </div>
     </Page>
   );

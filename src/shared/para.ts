@@ -85,6 +85,8 @@ export const taskListQuerySchema = z.object({
   status: csv(TASK_STATUS).optional(),
   dueFrom: isoDateSchema.optional(),
   dueTo: isoDateSchema.optional(),
+  /** Subtasks of a given task. */
+  parentTaskId: id.optional(),
   /** Only tasks with no project and no area. */
   unassigned: z.enum(["true"]).optional(),
   archived: z.enum(["true", "false"]).default("false"),
