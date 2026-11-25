@@ -197,3 +197,25 @@ describe("security headers", () => {
     expect(res.headers.get("content-security-policy")).toContain("default-src 'self'");
   });
 });
+
+describe("PWA support (Phase 7)", () => {
+  it("re-login hop requires Access and bounces back to a same-origin path", async () => {
+    expect((await call("/auth/login?next=/notes")).status).toBe(401);
+    const res = await call("/auth/login?next=%2Ffinance%3Ftab%3Daccounts", { headers: auth() });
+    expect(res.status).toBe(302);
+    expect(res.headers.get("location")).toBe("/finance?tab=accounts");
+  });
+
+  it.each(["https://evil.com", "//evil.com", "/\\evil.com", "notes", "", "/x\nSet-Cookie:a"])("never redirects off-site (next=%j)", async (next) => {
+    const res = await call(`/auth/login?next=${encodeURIComponent(next)}`, { headers: auth() });
+    expect(res.status).toBe(302);
+    expect(res.headers.get("location")).toBe("/");
+  });
+
+  it("serves the files that pick the app version with Cache-Control: no-cache", async () => {
+    for (const path of ["/sw.js", "/manifest.webmanifest"]) {
+      const res = await call(path, { headers: auth() });
+      expect(res.headers.get("cache-control"), path).toBe("no-cache");
+    }
+  });
+});

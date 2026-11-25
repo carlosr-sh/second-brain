@@ -8,7 +8,7 @@ import {
   BoldIcon, CodeIcon, Heading1Icon, Heading2Icon, Heading3Icon, HighlighterIcon, ImageIcon, ItalicIcon, LinkIcon, ListIcon,
   ListChecksIcon, ListOrderedIcon, QuoteIcon, SquareCodeIcon, StrikethroughIcon, type LucideIcon,
 } from "lucide-react";
-import { useRef, useState, type FormEvent } from "react";
+import { useEffect, useRef, useState, type FormEvent } from "react";
 import { useNavigate } from "react-router";
 import { toast } from "sonner";
 import type { RichDoc } from "@shared/rich-text";
@@ -16,12 +16,14 @@ import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Hint } from "@/components/ui/tooltip";
-import { api, ApiError } from "@/lib/api";
+import { api } from "@/lib/api";
 import { cn } from "@/lib/utils";
 import type { Note, SearchResult } from "@shared/knowledge";
 import { HL_END, HL_START } from "@shared/knowledge";
 import { uploadFile } from "../queries";
 import { NoteLink } from "./note-link";
+import { toastError } from "@/lib/toast-error";
+import { useOnline } from "@/features/offline/use-online";
 
 const SAFE_URL = /^(https?:\/\/|mailto:|\/(?!\/))/i;
 const strip = (s: string) => s.replaceAll(HL_START, "").replaceAll(HL_END, "");
@@ -66,13 +68,15 @@ export function NoteEditor({ noteId, initialContent, onChange, editable = true }
         else editor.chain().focus().insertContent(node).run();
         toast.success("Imagem adicionada", { id });
       } catch (e) {
-        toast.error(e instanceof ApiError ? e.message : "Falha no envio", { id });
+        toastError(e, "Falha no envio", { id });
       }
     }
   };
 
+  const online = useOnline();
+  const canEdit = editable && online; // offline = read-only (nothing could be saved)
   const editor = useEditor({
-    editable,
+    editable: canEdit,
     content: initialContent,
     immediatelyRender: true,
     shouldRerenderOnTransaction: false,
@@ -127,12 +131,16 @@ export function NoteEditor({ noteId, initialContent, onChange, editable = true }
     },
     onUpdate: ({ editor }) => onChangeRef.current(editor.getJSON() as RichDoc),
   });
+  // useEditor only reads `editable` at creation: follow connectivity changes.
+  useEffect(() => {
+    if (editor && editor.isEditable !== canEdit) editor.setEditable(canEdit);
+  }, [editor, canEdit]);
   const editorRef = useRef<Editor | null>(null);
   editorRef.current = editor;
 
   return (
     <div className="flex flex-col gap-2">
-      {editable && <Toolbar editor={editor} onImage={(files) => insertFiles(editor, files)} />}
+      {canEdit && <Toolbar editor={editor} onImage={(files) => insertFiles(editor, files)} />}
       <EditorContent editor={editor} className="min-h-[50vh]" />
     </div>
   );

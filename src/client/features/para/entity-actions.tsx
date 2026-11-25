@@ -4,8 +4,8 @@ import { toast } from "sonner";
 import type { TrashEntity } from "@shared/para";
 import { Button } from "@/components/ui/button";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
-import { ApiError } from "@/lib/api";
 import { useRestoreEntity, useTrashEntity } from "./queries";
+import { toastError } from "@/lib/toast-error";
 
 /** "⋯" menu with edit / archive / delete for a PARA entity detail page. */
 export function EntityActions({ entity, id, archived, onEdit, onArchiveToggle, backTo }: {
@@ -20,7 +20,7 @@ export function EntityActions({ entity, id, archived, onEdit, onArchiveToggle, b
         navigate(backTo);
         toast("Movido para a lixeira", { action: { label: "Desfazer", onClick: () => restore.mutate({ entity, id }) } });
       },
-      onError: (e) => toast.error(e instanceof ApiError ? e.message : "Erro"),
+      onError: (e) => toastError(e, "Erro"),
     });
   return (
     <DropdownMenu>

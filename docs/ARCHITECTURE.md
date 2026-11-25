@@ -226,3 +226,25 @@ Regras de negócio ficam nos **serviços** (`src/worker/services/*.service.ts`) 
 * **Gráficos**: Recharts em chunk sob demanda; tokens `--viz-*` por tema em `index.css`, paleta validada com o script da
   skill `dataviz`; toda visualização tem legenda (≥ 2 séries), tooltip e visão em tabela.
 * **Autosave genérico** (`features/knowledge/use-autosave.ts`): recebe a função de envio (notas, diário).
+
+## 14. Celular: PWA e leitura offline (Fase 7)
+
+```
+Aparelho ─┬─ Service worker (Workbox) ── precache da CASCA: HTML, JS, CSS, fontes, ícones
+          │     navegação → index.html em cache, EXCETO /api/, /cdn-cgi/ (Access), /auth/
+          │     /api/* → sempre rede (o SW nunca guarda dados)
+          └─ IndexedDB "second-brain-offline" ── cópia do cache do TanStack Query (7 dias)
+                restaurada ao abrir → exibida na hora → revalidada (invalidateQueries)
+```
+
+* **Registro**: `src/client/pwa/register.ts`, importado dinamicamente após o primeiro render (fora do bundle
+  inicial); `registerType: "prompt"` → toast "Nova versão disponível — Atualizar".
+* **Persistência**: `features/offline/offline-store.ts` (filtro do que persiste, `buster` = id do build, limpar,
+  tamanho); `app/providers.tsx` (PersistQueryClientProvider, gravação imediata ao ir para segundo plano).
+* **Conectividade**: `lib/connectivity.ts` alimenta o `onlineManager` do TanStack com falhas reais de rede;
+  consultas pausam (mantêm dados) em vez de falhar; mutações usam `networkMode: "always"` e falham na hora com
+  `NetworkError` → `toastError` (id único, sem duplicar).
+* **Editores** (nota, diário): só são criados com dados revalidados (`isDocumentReady`), porque leem o conteúdo
+  uma única vez; offline ficam `contenteditable=false`; o autosave reenvia o pendente no evento `online`.
+* **Access**: manifest com `crossorigin="use-credentials"`; relogin via `GET /auth/login?next=` (Worker valida
+  `next` contra *open redirect*); `Cache-Control: no-cache` em `/sw.js`, manifest e HTML.

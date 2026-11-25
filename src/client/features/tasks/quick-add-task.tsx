@@ -1,10 +1,9 @@
 import { PlusIcon } from "lucide-react";
 import { useState, type FormEvent } from "react";
-import { toast } from "sonner";
 import type { CreateTaskInput } from "@shared/para";
 import { useCreateTask } from "@/features/para/queries";
-import { ApiError } from "@/lib/api";
 import { cn } from "@/lib/utils";
+import { toastError } from "@/lib/toast-error";
 
 /** Inline "add task" input; context (project, area, due date, status) comes from `defaults`. */
 export function QuickAddTask({ defaults = {}, placeholder = "Adicionar tarefa…", className }: { defaults?: Partial<CreateTaskInput>; placeholder?: string; className?: string }) {
@@ -16,7 +15,7 @@ export function QuickAddTask({ defaults = {}, placeholder = "Adicionar tarefa…
     if (!t) return;
     create.mutate(
       { ...defaults, title: t },
-      { onSuccess: () => setTitle(""), onError: (err) => toast.error(err instanceof ApiError ? err.message : "Erro ao criar tarefa") },
+      { onSuccess: () => setTitle(""), onError: (err) => toastError(err, "Erro ao criar tarefa") },
     );
   };
   return (

@@ -3,7 +3,7 @@
 Sistema pessoal e privado de gestão de conhecimento (PARA), rodando inteiramente na Cloudflare
 (Workers + D1 + R2 + Access).
 
-**Status:** Fases 1 a 5 concluídas e em produção (`https://brain.ofulano.xyz`, protegido por Cloudflare Access). Relatórios em `docs/PHASE-*-REPORT.md`.
+**Status:** Fases 1 a 5 e 7 (celular/PWA) concluídas e em produção (`https://brain.ofulano.xyz`, protegido por Cloudflare Access). Relatórios em `docs/PHASE-*-REPORT.md`.
 
 ## Início rápido
 
@@ -44,3 +44,5 @@ pnpm build && pnpm test:csp
 | [docs/PHASE-3-REPORT.md](docs/PHASE-3-REPORT.md) | Fase 3: PARA core, regras de negócio, bugs encontrados |
 | [docs/PHASE-4-REPORT.md](docs/PHASE-4-REPORT.md) | Fase 4: notas, busca, tags, biblioteca, arquivos, segurança |
 | [docs/PHASE-5-REPORT.md](docs/PHASE-5-REPORT.md) | Fase 5: finanças, hábitos, diário, contatos |
+| [docs/PHASE-7-REPORT.md](docs/PHASE-7-REPORT.md) | Fase 7: PWA instalável e leitura offline |
+| [docs/MOBILE.md](docs/MOBILE.md) | **Como instalar e usar no celular** (Android e iPhone) |

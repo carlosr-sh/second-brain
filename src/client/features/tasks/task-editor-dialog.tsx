@@ -16,10 +16,11 @@ import { KeysHint } from "@/features/shortcuts/keys-hint";
 import { PRIORITY_LABEL, TASK_STATUS_LABEL } from "@/features/para/labels";
 import { paraKeys, useConvertInboxToTask, useCreateTask, useRestoreEntity, useTasks, useTrashEntity, useUpdateTask } from "@/features/para/queries";
 import { useParaLookup } from "@/features/para/use-lookup";
-import { api, ApiError } from "@/lib/api";
+import { api } from "@/lib/api";
 import { QuickAddTask } from "./quick-add-task";
 import { useTaskEditor } from "./task-editor-context";
 import { TaskRow } from "./task-row";
+import { toastError } from "@/lib/toast-error";
 
 interface FormState {
   title: string;
@@ -113,7 +114,7 @@ function TaskForm({ task, defaults, inboxId }: { task?: Task; defaults?: Partial
       setErrors(errs);
       return;
     }
-    const onError = (err: unknown) => toast.error(err instanceof ApiError ? err.message : "Não foi possível salvar");
+    const onError = (err: unknown) => toastError(err, "Não foi possível salvar");
     if (task) {
       // Subtasks inherit their location from the parent: never send it.
       const { projectId, areaId, ...rest } = parsed.data;
@@ -143,7 +144,7 @@ function TaskForm({ task, defaults, inboxId }: { task?: Task; defaults?: Partial
     if (!task) return;
     update.mutate({ id: task.id, archived: !task.archivedAt }, {
       onSuccess: () => { toast(task.archivedAt ? "Tarefa desarquivada" : "Tarefa arquivada"); close(); },
-      onError: (err) => toast.error(err instanceof ApiError ? err.message : "Erro"),
+      onError: (err) => toastError(err, "Erro"),
     });
   };
 

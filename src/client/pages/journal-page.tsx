@@ -7,6 +7,7 @@ import { emptyDoc } from "@shared/rich-text";
 import { isoDateIn } from "@shared/time";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
+import { isDocumentReady } from "@/features/offline/document-ready";
 import { NoteEditor } from "@/features/knowledge/editor/note-editor";
 import { useAutosave } from "@/features/knowledge/use-autosave";
 import { useJournalDay, useJournalRange, useSaveJournal } from "@/features/personal/queries";
@@ -106,7 +107,7 @@ export function JournalPage() {
       </header>
       <div className="flex flex-col gap-6 lg:flex-row-reverse">
         <div className="hidden lg:block"><MonthCalendar date={date} /></div>
-        {entry.isPending ? <Skeleton className="h-64 flex-1" /> : <Entry key={date} date={date} entry={entry.data ?? null} />}
+        {!isDocumentReady(entry) ? <Skeleton className="h-64 flex-1" /> : <Entry key={date} date={date} entry={entry.data ?? null} />}
       </div>
     </div>
   );

@@ -20,9 +20,9 @@ import { QuickAddTask } from "@/features/tasks/quick-add-task";
 import { TaskBoard } from "@/features/tasks/views/task-board";
 import { TaskList } from "@/features/tasks/views/task-list";
 import { Page } from "@/layout/page";
-import { ApiError } from "@/lib/api";
 import { formatDueDate } from "@/lib/format";
 import { NotFoundPage } from "./error-pages";
+import { toastError } from "@/lib/toast-error";
 
 export function ProjectDetailPage() {
   const { id = "" } = useParams();
@@ -44,7 +44,7 @@ function ProjectDetail({ project }: { project: Project }) {
   const open = topLevel.filter((t) => t.status !== "done" && t.status !== "cancelled");
   const done = topLevel.filter((t) => t.status === "done");
   const goal = goals.data?.find((g) => g.id === project.goalId);
-  const onError = (e: unknown) => toast.error(e instanceof ApiError ? e.message : "Erro");
+  const onError = (e: unknown) => toastError(e, "Erro");
 
   return (
     <Page wide>

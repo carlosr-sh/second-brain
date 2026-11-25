@@ -1,6 +1,5 @@
 import { PaperclipIcon } from "lucide-react";
 import { useId, useRef, useState, type FormEvent } from "react";
-import { toast } from "sonner";
 import { formatBRL, parseBRL } from "@shared/money";
 import type { Category, Transaction } from "@shared/personal";
 import { isoDateIn } from "@shared/time";
@@ -12,10 +11,10 @@ import { NativeSelect } from "@/components/ui/native-select";
 import { Segmented } from "@/components/ui/segmented";
 import { Textarea } from "@/components/ui/textarea";
 import { uploadFile } from "@/features/knowledge/queries";
-import { ApiError } from "@/lib/api";
 import { useAccounts, useCategories, useContacts, useCreateTransaction, useCreateTransfer, useUpdateTransaction } from "./queries";
+import { toastError } from "@/lib/toast-error";
 
-const onError = (e: unknown) => toast.error(e instanceof ApiError ? e.message : "Não foi possível salvar");
+const onError = (e: unknown) => toastError(e, "Não foi possível salvar");
 
 /** Amount typed in Brazilian format; parsed with string math (no floats). */
 export function MoneyInput({ id, value, onChange, invalid }: { id: string; value: string; onChange: (v: string) => void; invalid?: boolean }) {

@@ -18,11 +18,11 @@ import { TagPicker } from "@/features/knowledge/tag-picker";
 import { BookCard } from "@/features/knowledge/books";
 import { useAreas } from "@/features/para/queries";
 import { Page, PageHeader } from "@/layout/page";
-import { ApiError } from "@/lib/api";
 import { formatRelative } from "@/lib/format";
 import { cn } from "@/lib/utils";
+import { toastError } from "@/lib/toast-error";
 
-const onError = (e: unknown) => toast.error(e instanceof ApiError ? e.message : "Erro");
+const onError = (e: unknown) => toastError(e, "Erro");
 
 /** Single-line "name + Enter" create form used by several pages. */
 function InlineCreate({ placeholder, onCreate, pending }: { placeholder: string; onCreate: (v: string, reset: () => void) => void; pending?: boolean }) {

@@ -1,7 +1,6 @@
 import { BookIcon, ImagePlusIcon, PlusIcon, StarIcon } from "lucide-react";
 import { useId, useRef, useState } from "react";
 import { useNavigate } from "react-router";
-import { toast } from "sonner";
 import { BOOK_STATUS } from "@shared/enums";
 import { createBookSchema, type Book, type CreateBookInput } from "@shared/knowledge";
 import { Button } from "@/components/ui/button";
@@ -11,10 +10,10 @@ import { Input } from "@/components/ui/input";
 import { NativeSelect } from "@/components/ui/native-select";
 import { Textarea } from "@/components/ui/textarea";
 import { useZodForm } from "@/features/forms/use-form";
-import { ApiError } from "@/lib/api";
 import { cn } from "@/lib/utils";
 import { useCreateBook, useCreateNote, useNotes, useTrashKb, useUpdateBook, uploadFile } from "./queries";
 import { TagPicker } from "./tag-picker";
+import { toastError } from "@/lib/toast-error";
 
 const STATUS_LABEL: Record<Book["status"], string> = { want_to_read: "Quero ler", reading: "Lendo", finished: "Lido", abandoned: "Abandonado" };
 
@@ -74,7 +73,7 @@ function BookFormDialog({ open, onOpenChange, book, defaults }: { open: boolean;
       summary: f.summary.trim() || null, coverFileId: cover,
     }),
   );
-  const onError = (e: unknown) => toast.error(e instanceof ApiError ? e.message : "Não foi possível salvar");
+  const onError = (e: unknown) => toastError(e, "Não foi possível salvar");
   const submit = () => {
     const data = form.validate();
     if (!data) return;

@@ -8,8 +8,8 @@
 | R4 | D1 **não tem transações interativas** (`BEGIN…COMMIT` entre chamadas) | Operações multi-tabela poderiam ficar pela metade | Usar `db.batch([...])` (atômico) — ex.: transferências, salvar nota + links |
 | R5 | Limites de CPU/memória do Worker | Export/restore de muitos dados pode estourar | Exports paginados/streaming; tarefas longas via Cron + lotes (ou Workflows) |
 | R6 | Tamanho máximo do D1 (10 GB) e de linha (~2 MB) | Notas enormes ou base muito grande | Imagens/arquivos sempre no R2, nunca no banco; monitorar tamanho em `/system/status` |
-| R7 | PWA offline + Access: quando a sessão expira, o Access redireciona para outra origem e `fetch` falha | App "quebra" silenciosamente offline/expirado | Detectar redirect/opaque response → estado "sessão expirada" com botão de relogin; cache offline só de leitura |
-| R8 | Cache offline guarda dados pessoais no dispositivo | Exposição se o aparelho for comprometido | Cache opcional por dispositivo, botão "limpar dados offline", nunca cachear exports/arquivos sensíveis |
+| R7 | PWA offline + Access: quando a sessão expira, o Access redireciona para outra origem e `fetch` falha; com SW, recarregar nem chega ao Access | App "quebra" ou fica em loop de login | `redirect: "manual"` → tela "sessão expirada"; relogin por `/auth/login` (fora do SW); offline só leitura (Fase 7) |
+| R8 | Cache offline guarda dados pessoais no dispositivo | Exposição se o aparelho for comprometido | Só no IndexedDB (SW guarda apenas a casca); opcional por aparelho; "Limpar dados offline"; "Sair" apaga antes do logout; sem arquivos, busca, auditoria; descartado a cada versão |
 | R9 | CSP exige `style-src 'unsafe-inline'` (estilos inline de Tiptap/Radix) | Pequena superfície para injeção de CSS | `script-src` continua estrito; HTML do editor sanitizado; sem dados do usuário em `style` |
 | R10 | Scripts injetados pela Cloudflare (Rocket Loader, Email Obfuscation, Analytics) | Bloqueados pela CSP, podem quebrar a página | Desativar no hostname (ver `INFRASTRUCTURE.md`) |
 | R11 | Desnormalizações deliberadas (`content_text`, `note_links`, futura `search_index`) | Divergência se alguém gravar fora do serviço | Escrita só via serviço; job de integridade recalcula e compara |
@@ -27,3 +27,6 @@
 | R23 | Objetos órfãos no R2 (imagens removidas de notas) | Armazenamento cresce sem uso | Arquivos ficam rastreados em `files` e `note_attachments`; limpeza na Fase 8 |
 | R24 | Alias de coluna com o mesmo nome de uma coluna real em `GROUP BY` (SQLite resolve para a coluna) | Relatórios errados em silêncio | Aliases sempre distintos de colunas; relatórios com testes de valores conhecidos |
 | R25 | Correções que dependem da ordem de avaliação de módulos | Quebram quando o bundler reorganiza chunks | Garantir ordem por dependência explícita (import), nunca por posição no entrypoint |
+| R26 | `navigator.onLine` fica `true` com Wi-Fi sem internet | App mostra erros em vez da cópia offline | Conectividade derivada das requisições + sonda `/api/health` (`lib/connectivity.ts`) |
+| R27 | Cópia offline restaurada mais antiga que o servidor | Dados antigos exibidos como atuais; editor com versão velha | Revalidação de tudo ao restaurar; editores só abrem após revalidar (`document-ready.ts`) |
+| R28 | Safari/iOS real não é testável neste ambiente (sem WebKit) | Diferenças de PWA no iOS (cookies separados, login) | E2E com perfil de iPhone no Chromium + checklist manual em `MOBILE.md` |

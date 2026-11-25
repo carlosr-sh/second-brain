@@ -4,7 +4,8 @@ import type {
   SearchResult, StoredFile, Tag, Taggable, UpdateBookInput, UpdateBookmarkInput, UpdateNoteInput,
 } from "@shared/knowledge";
 import { ENTITY_PATH } from "@shared/para";
-import { api, ApiError } from "@/lib/api";
+import { api, ApiError, NetworkError } from "@/lib/api";
+import { isOnline, markOffline } from "@/lib/connectivity";
 
 export const kbKeys = {
   all: ["kb"] as const,
@@ -103,7 +104,11 @@ export const useTrashKb = () =>
 export async function uploadFile(file: File): Promise<StoredFile> {
   const form = new FormData();
   form.append("file", file);
-  const res = await fetch("/api/files", { method: "POST", body: form, credentials: "same-origin", redirect: "manual" });
+  if (!isOnline()) throw new NetworkError();
+  const res = await fetch("/api/files", { method: "POST", body: form, credentials: "same-origin", redirect: "manual" }).catch((err: unknown) => {
+    if (err instanceof TypeError) markOffline();
+    throw err instanceof TypeError ? new NetworkError() : err;
+  });
   const body = (await res.json().catch(() => null)) as { data?: StoredFile; error?: { code: string; message: string } } | null;
   if (!res.ok || !body?.data) throw new ApiError(res.status, body && body.error ? { error: body.error as never } : null);
   return body.data;

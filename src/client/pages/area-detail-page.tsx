@@ -15,8 +15,8 @@ import { QuickAddTask } from "@/features/tasks/quick-add-task";
 import { TaskList } from "@/features/tasks/views/task-list";
 import { GoalCard } from "@/pages/goals-page";
 import { Page } from "@/layout/page";
-import { ApiError } from "@/lib/api";
 import { NotFoundPage } from "./error-pages";
+import { toastError } from "@/lib/toast-error";
 
 export function AreaDetailPage() {
   const { id = "" } = useParams();
@@ -60,7 +60,7 @@ function AreaDetail({ area }: { area: Area }) {
         </div>
         <EntityActions
           entity="area" id={area.id} archived={!!area.archivedAt} backTo="/areas" onEdit={() => setDialog("edit")}
-          onArchiveToggle={() => update.mutate({ id: area.id, archived: !area.archivedAt }, { onSuccess: () => toast(area.archivedAt ? "Área desarquivada" : "Área arquivada"), onError: (e) => toast.error(e instanceof ApiError ? e.message : "Erro") })}
+          onArchiveToggle={() => update.mutate({ id: area.id, archived: !area.archivedAt }, { onSuccess: () => toast(area.archivedAt ? "Área desarquivada" : "Área arquivada"), onError: (e) => toastError(e, "Erro") })}
         />
       </header>
       <div className="grid gap-8 lg:grid-cols-[1fr_320px]">

@@ -47,11 +47,16 @@ export function useAutosave<P extends object>(key: string, send: (patch: P, opts
   useEffect(() => {
     const onHide = () => document.visibilityState === "hidden" && flush({ unloading: true });
     const onPageHide = () => flush({ unloading: true });
+    // Connection came back: send what failed while it was down (the editor
+    // turns read-only offline, but the last keystrokes may still be pending).
+    const onOnline = () => flush();
     document.addEventListener("visibilitychange", onHide);
     window.addEventListener("pagehide", onPageHide);
+    window.addEventListener("online", onOnline);
     return () => {
       document.removeEventListener("visibilitychange", onHide);
       window.removeEventListener("pagehide", onPageHide);
+      window.removeEventListener("online", onOnline);
       flush(); // key switched / unmounted
     };
   }, [flush, key]);

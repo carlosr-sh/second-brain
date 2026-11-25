@@ -1,4 +1,5 @@
 import type { ApiErrorBody, ApiSuccess } from "@shared/api";
+import { isOnline, markOffline, markOnline } from "./connectivity";
 
 export class ApiError extends Error {
   constructor(
@@ -15,6 +16,18 @@ export class SessionExpiredError extends Error {
   constructor() {
     super("Sua sessão expirou");
     this.name = "SessionExpiredError";
+  }
+}
+
+/**
+ * No connection: the device is offline or the request never reached the
+ * server (fetch rejects with a TypeError). Writes are never queued — the app
+ * is read-only offline — so the user must be told that nothing was saved.
+ */
+export class NetworkError extends Error {
+  constructor() {
+    super("Sem conexão — nada foi salvo");
+    this.name = "NetworkError";
   }
 }
 
@@ -39,6 +52,10 @@ export async function api<T>(path: string, init: RequestInit & { json?: unknown;
   headers.set("Accept", "application/json");
   if (json !== undefined) headers.set("Content-Type", "application/json");
 
+  const method = (rest.method ?? "GET").toUpperCase();
+  // Offline writes fail fast and clearly (no waiting for a network timeout).
+  if (method !== "GET" && !isOnline()) throw new NetworkError();
+
   const res = await fetch(`/api${path}`, {
     ...rest,
     headers,
@@ -48,7 +65,14 @@ export async function api<T>(path: string, init: RequestInit & { json?: unknown;
     // (autosave on tab close). Browsers cap keepalive bodies at 64 KiB.
     keepalive: keepalive === true && typeof requestBody === "string" && requestBody.length < 60_000,
     redirect: "manual",
+  }).catch((err: unknown) => {
+    if (err instanceof TypeError) {
+      markOffline();
+      throw new NetworkError();
+    }
+    throw err;
   });
+  markOnline();
 
   if (res.type === "opaqueredirect" || res.status === 401) {
     sessionListeners.forEach((fn) => fn());

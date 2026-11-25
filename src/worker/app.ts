@@ -15,6 +15,12 @@ import { systemRoutes } from "./routes/system.routes";
 import type { AppEnv } from "./types";
 import { MAX_UPLOAD_BYTES } from "../shared/knowledge";
 
+/** Only same-origin absolute paths ("/x"); never "//evil.com" or "/\\evil.com" (open redirect). */
+export function safeNextPath(next: string | undefined): string {
+  if (!next || !next.startsWith("/") || next.startsWith("//") || next.startsWith("/\\") || /[\u0000-\u001f]/.test(next)) return "/";
+  return next;
+}
+
 export interface CreateAppOptions {
   auth?: AccessAuthOptions;
 }
@@ -80,6 +86,15 @@ export function createApp(options: CreateAppOptions = {}) {
   api.notFound(apiNotFound);
   app.route("/api", api);
   app.all("/api/*", apiNotFound);
+
+  /**
+   * Re-login hop for the PWA. The service worker answers every navigation
+   * from its cache, so a plain reload would never reach Cloudflare Access.
+   * /auth/* is excluded from the SW fallback: this request hits the network,
+   * Access sends an expired session through its login, and once the request
+   * gets here (authenticated) we bounce back to the page the user was on.
+   */
+  app.get("/auth/login", (c) => c.redirect(safeNextPath(c.req.query("next")), 302));
 
   // Static assets + SPA fallback (configured in wrangler.jsonc `assets`).
   app.all("*", (c) => c.env.ASSETS.fetch(c.req.raw));

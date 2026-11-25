@@ -1,5 +1,4 @@
 import { useId, type FormEvent, type ReactNode } from "react";
-import { toast } from "sonner";
 import { GOAL_HORIZON, GOAL_STATUS, PRIORITY, PROJECT_STATUS } from "@shared/enums";
 import {
   createAreaSchema, createGoalSchema, createProjectSchema,
@@ -13,10 +12,10 @@ import { NativeSelect } from "@/components/ui/native-select";
 import { Textarea } from "@/components/ui/textarea";
 import { GOAL_HORIZON_LABEL, GOAL_STATUS_LABEL, PRIORITY_LABEL, PROJECT_STATUS_LABEL } from "@/features/para/labels";
 import { useAreas, useCreateArea, useCreateGoal, useCreateProject, useGoals, useUpdateArea, useUpdateGoal, useUpdateProject } from "@/features/para/queries";
-import { ApiError } from "@/lib/api";
 import { useZodForm } from "./use-form";
+import { toastError } from "@/lib/toast-error";
 
-const onApiError = (err: unknown) => toast.error(err instanceof ApiError ? err.message : "Não foi possível salvar");
+const onApiError = (err: unknown) => toastError(err, "Não foi possível salvar");
 const orNull = (s: string) => (s.trim() ? s : null);
 
 function FormDialog({ open, onOpenChange, title, onSubmit, pending, children, submitLabel }: {

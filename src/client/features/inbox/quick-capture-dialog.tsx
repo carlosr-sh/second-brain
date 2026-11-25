@@ -8,8 +8,8 @@ import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, D
 import { Textarea } from "@/components/ui/textarea";
 import { useUiState } from "@/app/ui-state";
 import { KeysHint } from "@/features/shortcuts/keys-hint";
-import { ApiError } from "@/lib/api";
 import { useCaptureInbox } from "./hooks";
+import { toastError } from "@/lib/toast-error";
 
 /** If the whole capture is a single URL, store it as the item's link too. */
 export function splitCapture(text: string): { content: string; url?: string } {
@@ -33,7 +33,7 @@ export function QuickCaptureDialog() {
         setCaptureOpen(false);
         toast.success("Capturado na Inbox", { action: { label: "Ver", onClick: () => navigate("/inbox") } });
       },
-      onError: (err) => toast.error(err instanceof ApiError ? err.message : "Não foi possível salvar"),
+      onError: (err) => toastError(err, "Não foi possível salvar"),
     });
   };
 

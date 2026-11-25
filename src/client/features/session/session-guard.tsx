@@ -3,6 +3,15 @@ import { useEffect, useState, type ReactNode } from "react";
 import { Button } from "@/components/ui/button";
 import { onSessionExpired } from "@/lib/api";
 
+/**
+ * Goes through /auth/login (never served by the service worker) so the
+ * request really reaches Cloudflare Access; afterwards the Worker sends the
+ * user back to the page they were on.
+ */
+export function reloginUrl(loc: Pick<Location, "pathname" | "search"> = window.location): string {
+  return `/auth/login?next=${encodeURIComponent(loc.pathname + loc.search)}`;
+}
+
 /** Replaces the app with a re-login prompt once the Access session expires. */
 export function SessionGuard({ children }: { children: ReactNode }) {
   const [expired, setExpired] = useState(false);
@@ -17,7 +26,7 @@ export function SessionGuard({ children }: { children: ReactNode }) {
         </div>
         <h1 id="session-title" className="text-lg font-semibold">Sua sessão expirou</h1>
         <p className="text-sm text-muted-foreground">Por segurança, entre novamente para continuar. Nada do que já foi salvo se perdeu.</p>
-        <Button onClick={() => window.location.reload()}>Entrar novamente</Button>
+        <Button onClick={() => window.location.assign(reloginUrl())}>Entrar novamente</Button>
       </div>
     </div>
   );

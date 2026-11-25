@@ -1,12 +1,11 @@
 import { HashIcon, PlusIcon } from "lucide-react";
 import { useState } from "react";
-import { toast } from "sonner";
 import type { Taggable } from "@shared/knowledge";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
-import { ApiError } from "@/lib/api";
 import { useCreateTag, useSetTags, useTags } from "./queries";
+import { toastError } from "@/lib/toast-error";
 
 /** Shows an entity's tags and lets you toggle/create tags (replace-set semantics). */
 export function TagPicker({ entity, id, tagIds }: { entity: Taggable; id: string; tagIds: string[] }) {
@@ -18,7 +17,7 @@ export function TagPicker({ entity, id, tagIds }: { entity: Taggable; id: string
   const selected = all.filter((t) => tagIds.includes(t.id));
   const visible = all.filter((t) => t.name.toLowerCase().includes(filter.trim().toLowerCase()));
   const exact = all.some((t) => t.name.toLowerCase() === filter.trim().toLowerCase());
-  const save = (ids: string[]) => setTags.mutate({ entity, id, tagIds: ids }, { onError: (e) => toast.error(e instanceof ApiError ? e.message : "Erro") });
+  const save = (ids: string[]) => setTags.mutate({ entity, id, tagIds: ids }, { onError: (e) => toastError(e, "Erro") });
   const toggle = (tagId: string) => save(tagIds.includes(tagId) ? tagIds.filter((x) => x !== tagId) : [...tagIds, tagId]);
 
   return (
@@ -37,7 +36,7 @@ export function TagPicker({ entity, id, tagIds }: { entity: Taggable; id: string
             onKeyDown={(e) => {
               e.stopPropagation(); // keep typing inside the menu (Radix typeahead)
               if (e.key === "Enter" && filter.trim() && !exact) {
-                createTag.mutate({ name: filter.trim() }, { onSuccess: (t) => { save([...tagIds, t.id]); setFilter(""); }, onError: (err) => toast.error(err instanceof ApiError ? err.message : "Erro") });
+                createTag.mutate({ name: filter.trim() }, { onSuccess: (t) => { save([...tagIds, t.id]); setFilter(""); }, onError: (err) => toastError(err, "Erro") });
               }
             }}
             placeholder="Buscar ou criar…"

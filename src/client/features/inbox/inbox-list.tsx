@@ -8,8 +8,8 @@ import { cn } from "@/lib/utils";
 import { useTaskEditor } from "@/features/tasks/task-editor-context";
 import { useNavigate } from "react-router";
 import { useConvertInboxToNote } from "@/features/knowledge/queries";
-import { ApiError } from "@/lib/api";
 import { useSetInboxProcessed, useTrashInbox } from "./hooks";
+import { toastError } from "@/lib/toast-error";
 
 function InboxRow({ item, compact }: { item: InboxItem; compact?: boolean }) {
   const setProcessed = useSetInboxProcessed();
@@ -48,7 +48,7 @@ function InboxRow({ item, compact }: { item: InboxItem; compact?: boolean }) {
           )}
           {!processed && (
             <Hint label="Converter em nota">
-              <Button variant="ghost" size="icon-sm" aria-label="Converter em nota" onClick={() => toNote.mutate(item.id, { onSuccess: (n) => navigate(`/notes/${n.id}`), onError: (e) => toast.error(e instanceof ApiError ? e.message : "Erro") })}>
+              <Button variant="ghost" size="icon-sm" aria-label="Converter em nota" onClick={() => toNote.mutate(item.id, { onSuccess: (n) => navigate(`/notes/${n.id}`), onError: (e) => toastError(e, "Erro") })}>
                 <StickyNoteIcon />
               </Button>
             </Hint>

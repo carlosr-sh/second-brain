@@ -142,7 +142,12 @@
   * { @apply border-border outline-ring/50; }
   html { @apply h-full; font-feature-settings: "cv11", "ss01"; -webkit-tap-highlight-color: transparent; }
   body { @apply h-full bg-background font-sans text-foreground antialiased; text-rendering: optimizeLegibility; }
-  #root { @apply h-full; }
+  /* Installed app (viewport-fit=cover): keep content out of the notch, rounded
+     corners and the home indicator. env() is 0 in a normal browser tab. */
+  #root {
+    @apply h-full;
+    padding: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);
+  }
   ::selection { background: color-mix(in oklch, var(--brand) 25%, transparent); }
   @media (prefers-reduced-motion: reduce) {
     *, *::before, *::after { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; }

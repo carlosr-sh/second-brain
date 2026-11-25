@@ -13,6 +13,9 @@ export default defineConfig({
   projects: [
     { name: "desktop", use: { ...devices["Desktop Chrome"] }, testIgnore: /mobile/ },
     { name: "mobile", use: { ...devices["Pixel 7"] }, testMatch: /mobile/ },
+    // iPhone viewport/touch/UA on Chromium (WebKit is not installed here; real
+    // Safari behaviour is covered by the manual checklist in docs/MOBILE.md).
+    { name: "iphone", use: { ...devices["iPhone 14"], browserName: "chromium" }, testMatch: /mobile/ },
   ],
   webServer: {
     command: "pnpm exec vite --port 5173 --strictPort",

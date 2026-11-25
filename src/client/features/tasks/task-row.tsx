@@ -1,5 +1,4 @@
 import { CalendarIcon, FlagIcon, FolderIcon, LayersIcon, RepeatIcon } from "lucide-react";
-import { toast } from "sonner";
 import type { Task } from "@shared/para";
 import { Checkbox } from "@/components/ui/checkbox";
 import { PRIORITY_COLOR, PRIORITY_LABEL } from "@/features/para/labels";
@@ -9,6 +8,7 @@ import { useToday } from "@/features/para/use-today";
 import { formatDueDate } from "@/lib/format";
 import { cn } from "@/lib/utils";
 import { useTaskEditor } from "./task-editor-context";
+import { toastError } from "@/lib/toast-error";
 
 export function TaskCheckbox({ task }: { task: Task }) {
   const update = useUpdateTask();
@@ -22,7 +22,7 @@ export function TaskCheckbox({ task }: { task: Task }) {
       onCheckedChange={(checked) =>
         update.mutate(
           { id: task.id, status: checked ? "done" : "todo" },
-          { onError: () => toast.error("Não foi possível atualizar a tarefa") },
+          { onError: (e) => toastError(e, "Não foi possível atualizar a tarefa") },
         )
       }
     />

@@ -10,14 +10,14 @@ import { Segmented } from "@/components/ui/segmented";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useAreas, useEmptyTrash, useGoals, useProjects, usePurgeEntity, useRestoreEntity, useTasks, useTrash, useUpdateArea, useUpdateGoal, useUpdateProject, useUpdateTask } from "@/features/para/queries";
 import { Page, PageHeader } from "@/layout/page";
-import { ApiError } from "@/lib/api";
 import { formatDateTime } from "@/lib/format";
+import { toastError } from "@/lib/toast-error";
 
 const ENTITY_LABEL: Record<TrashEntity, string> = {
   area: "Área", goal: "Meta", project: "Projeto", task: "Tarefa", note: "Nota", notebook: "Caderno", resource: "Recurso", bookmark: "Link", book: "Livro",
   account: "Conta", category: "Categoria", transaction: "Lançamento", habit: "Hábito", journal: "Diário", contact: "Contato",
 };
-const onError = (e: unknown) => toast.error(e instanceof ApiError ? e.message : "Erro");
+const onError = (e: unknown) => toastError(e, "Erro");
 
 function Row({ entity, title, meta, children }: { entity: TrashEntity; title: string; meta?: string; children: React.ReactNode }) {
   return (

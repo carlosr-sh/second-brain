@@ -19,3 +19,6 @@ createRoot(root).render(
     </Providers>
   </StrictMode>,
 );
+
+// After the first render: never delays the UI, never in the initial chunk.
+void import("./pwa/register").then((m) => m.registerServiceWorker());

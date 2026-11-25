@@ -1,7 +1,6 @@
 import {
   ArchiveIcon, ArchiveRestoreIcon, ArrowLeftIcon, CheckIcon, CloudOffIcon, LinkIcon, LoaderIcon, MoreHorizontalIcon, PinIcon,
-  PlusIcon, SearchIcon, StarIcon, StickyNoteIcon, Trash2Icon,
-} from "lucide-react";
+  PlusIcon, SearchIcon, StarIcon, StickyNoteIcon, Trash2Icon } from "lucide-react";
 import { useMemo, useState } from "react";
 import { Link, useNavigate, useParams, useSearchParams } from "react-router";
 import { toast } from "sonner";
@@ -13,6 +12,7 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSepara
 import { NativeSelect } from "@/components/ui/native-select";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Hint } from "@/components/ui/tooltip";
+import { isDocumentReady } from "@/features/offline/document-ready";
 import { NoteEditor } from "@/features/knowledge/editor/note-editor";
 import { useBacklinks, useCreateNote, useNote, useNotebooks, useNotes, useResources, useSaveNote, useTags, useTrashKb } from "@/features/knowledge/queries";
 import { TagPicker } from "@/features/knowledge/tag-picker";
@@ -21,6 +21,7 @@ import { useRestoreEntity } from "@/features/para/queries";
 import { useParaLookup } from "@/features/para/use-lookup";
 import { formatRelative } from "@/lib/format";
 import { cn } from "@/lib/utils";
+import { toastError } from "@/lib/toast-error";
 
 export function NotesPage() {
   const { id } = useParams();
@@ -124,7 +125,9 @@ function NoteView({ id }: { id: string }) {
   const valid = UUID_REGEX.test(id);
   const note = useNote(valid ? id : undefined); // impossible ids never hit the API
   if (!valid) return <div className="p-8"><EmptyState icon={StickyNoteIcon} title="Nota não encontrada" /></div>;
-  if (note.isPending) return <div className="mx-auto max-w-3xl space-y-4 p-8"><Skeleton className="h-10 w-2/3" /><Skeleton className="h-64" /></div>;
+  // Offline and never opened on this device: say so instead of a skeleton forever.
+  if (note.isPending && note.fetchStatus === "paused") return <div className="p-8"><EmptyState icon={CloudOffIcon} title="Nota indisponível offline" description="Abra esta nota com internet uma vez para tê-la neste aparelho." /></div>;
+  if (!isDocumentReady(note)) return <div className="mx-auto max-w-3xl space-y-4 p-8"><Skeleton className="h-10 w-2/3" /><Skeleton className="h-64" /></div>;
   if (!note.data) return <div className="p-8"><EmptyState icon={StickyNoteIcon} title="Nota não encontrada" /></div>;
   return <NoteDetail note={note.data} />;
 }
@@ -142,7 +145,7 @@ function NoteDetail({ note }: { note: Note }) {
   const resources = useResources();
   const { projects, areas } = useParaLookup();
   const location = note.projectId ? `project:${note.projectId}` : note.areaId ? `area:${note.areaId}` : note.resourceId ? `resource:${note.resourceId}` : "";
-  const setMeta = (patch: Parameters<typeof save.mutate>[0]) => { flush(); save.mutate(patch, { onError: () => toast.error("Não foi possível salvar") }); };
+  const setMeta = (patch: Parameters<typeof save.mutate>[0]) => { flush(); save.mutate(patch, { onError: (e) => toastError(e, "Não foi possível salvar") }); };
 
   const moveLocation = (value: string) => {
     const [kind, ref] = value.split(":");

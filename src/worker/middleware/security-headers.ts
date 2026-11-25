@@ -37,6 +37,8 @@ const STATIC_HEADERS: Record<string, string> = {
   "Cross-Origin-Resource-Policy": "same-origin",
 };
 
+const REVALIDATE_PATHS = new Set(["/sw.js", "/manifest.webmanifest", "/registerSW.js"]);
+
 /** Applies security headers to EVERY response (API and static assets). */
 export const securityHeaders = (): MiddlewareHandler<AppEnv> => async (c, next) => {
   await next();
@@ -49,6 +51,11 @@ export const securityHeaders = (): MiddlewareHandler<AppEnv> => async (c, next) 
   if (!res.headers.has("Content-Security-Policy")) res.headers.set("Content-Security-Policy", buildCsp(isDev));
   if (!isDev) res.headers.set("Strict-Transport-Security", "max-age=63072000; includeSubDomains");
   if (isApiPath(c.req.path) && !res.headers.has("Cache-Control")) res.headers.set("Cache-Control", "no-store");
+  // PWA: files that decide WHICH version runs must always be revalidated
+  // (hashed assets are immutable and keep their default caching).
+  if (REVALIDATE_PATHS.has(c.req.path) || res.headers.get("Content-Type")?.startsWith("text/html")) {
+    res.headers.set("Cache-Control", "no-cache");
+  }
   const requestId = c.get("requestId");
   if (requestId) res.headers.set("X-Request-Id", requestId);
   c.res = res;

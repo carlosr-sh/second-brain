@@ -22,10 +22,10 @@ import {
   useTransaction, useTransactions, useUpdateAccount, useUpdateCategory,
 } from "@/features/personal/queries";
 import { Page, PageHeader } from "@/layout/page";
-import { ApiError } from "@/lib/api";
 import { cn } from "@/lib/utils";
+import { toastError } from "@/lib/toast-error";
 
-const onError = (e: unknown) => toast.error(e instanceof ApiError ? e.message : "Erro");
+const onError = (e: unknown) => toastError(e, "Erro");
 const TYPE_LABEL: Record<Account["type"], string> = { checking: "Conta-corrente", savings: "Poupança", credit_card: "Cartão de crédito", cash: "Dinheiro", investment: "Investimentos", other: "Outra" };
 const monthTitle = (m: string) => new Intl.DateTimeFormat("pt-BR", { month: "long", year: "numeric", timeZone: "UTC" }).format(new Date(`${m}-01T00:00:00Z`)).replace(/^./, (c) => c.toUpperCase());
 const dayTitle = (d: string) => new Intl.DateTimeFormat("pt-BR", { weekday: "short", day: "2-digit", month: "short", timeZone: "UTC" }).format(new Date(`${d}T00:00:00Z`));

@@ -1,6 +1,5 @@
 import { ArchiveIcon, CheckIcon, FlameIcon, MinusIcon, PlusIcon, Trash2Icon } from "lucide-react";
 import { useState, type FormEvent } from "react";
-import { toast } from "sonner";
 import { addDays, isoWeekday } from "@shared/dates";
 import { HABIT_FREQUENCY } from "@shared/enums";
 import type { Habit } from "@shared/personal";
@@ -14,10 +13,10 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { useTrashEntity } from "@/features/para/queries";
 import { useCreateHabit, useHabitLog, useHabits, useUpdateHabit } from "@/features/personal/queries";
 import { Page, PageHeader } from "@/layout/page";
-import { ApiError } from "@/lib/api";
 import { cn } from "@/lib/utils";
+import { toastError } from "@/lib/toast-error";
 
-const onError = (e: unknown) => toast.error(e instanceof ApiError ? e.message : "Erro");
+const onError = (e: unknown) => toastError(e, "Erro");
 const FREQ_LABEL: Record<Habit["frequency"], string> = { daily: "por dia", weekly: "por semana", monthly: "por mês" };
 const PERIOD_LABEL: Record<Habit["frequency"], [string, string]> = { daily: ["dia seguido", "dias seguidos"], weekly: ["semana seguida", "semanas seguidas"], monthly: ["mês seguido", "meses seguidos"] };
 const WEEKS = 26;

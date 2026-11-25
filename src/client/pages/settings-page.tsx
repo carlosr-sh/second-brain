@@ -1,7 +1,10 @@
-import { LogOutIcon, ShieldCheckIcon } from "lucide-react";
-import type { ReactNode } from "react";
+import { LogOutIcon, ShieldCheckIcon, Trash2Icon } from "lucide-react";
+import { useEffect, useState, type ReactNode } from "react";
+import { toast } from "sonner";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { Checkbox } from "@/components/ui/checkbox";
+import { clearOfflineData, isOfflineEnabled, offlineDataSize, setOfflineEnabled } from "@/features/offline/offline-store";
 import { Skeleton } from "@/components/ui/skeleton";
 import { GLOBAL_SHORTCUTS } from "@/features/shortcuts/global-shortcuts";
 import { KeysHint } from "@/features/shortcuts/keys-hint";
@@ -132,6 +135,61 @@ function AuditSection() {
   );
 }
 
+/** Logout also wipes the offline copy: nothing personal stays on the device. */
+async function signOut() {
+  await clearOfflineData().catch(() => {});
+  window.location.assign("/cdn-cgi/access/logout");
+}
+
+function formatBytes(n: number): string {
+  if (n < 1024) return `${n} B`;
+  if (n < 1024 * 1024) return `${(n / 1024).toFixed(0)} KB`;
+  return `${(n / 1024 / 1024).toFixed(1).replace(".", ",")} MB`;
+}
+
+function OfflineSection() {
+  const [enabled] = useState(isOfflineEnabled);
+  const [size, setSize] = useState<number | null>(null);
+  const [busy, setBusy] = useState(false);
+  useEffect(() => {
+    void offlineDataSize().then(setSize).catch(() => setSize(0));
+  }, []);
+
+  // The persister is wired at startup: changing it (or wiping the copy)
+  // reloads the app so memory and IndexedDB never disagree.
+  const apply = async (next: boolean | null) => {
+    setBusy(true);
+    await clearOfflineData().catch(() => {});
+    if (next !== null) setOfflineEnabled(next);
+    toast.success(next === true ? "Dados offline ativados" : next === false ? "Dados offline desativados e apagados" : "Dados offline apagados");
+    setTimeout(() => window.location.reload(), 600);
+  };
+
+  return (
+    <Section title="Dados offline" description="Cópia local para abrir o app sem internet. Só leitura; fica apenas neste aparelho.">
+      <div className="flex flex-col gap-3 text-sm">
+        <label className="flex items-start gap-3">
+          <Checkbox checked={enabled} disabled={busy} onCheckedChange={(v) => void apply(v === true)} aria-describedby="offline-help" className="mt-0.5" />
+          <span>
+            Guardar dados neste aparelho
+            <span id="offline-help" className="block text-xs text-muted-foreground">
+              Telas abertas nos últimos 7 dias ficam disponíveis offline. Arquivos e imagens não são guardados.
+            </span>
+          </span>
+        </label>
+        <div className="flex flex-wrap items-center gap-3">
+          <span className="text-muted-foreground" data-testid="offline-size">
+            Ocupando: {size === null ? "…" : formatBytes(size)}
+          </span>
+          <Button variant="outline" size="sm" disabled={busy || !size} onClick={() => void apply(null)}>
+            <Trash2Icon /> Limpar dados offline
+          </Button>
+        </div>
+      </div>
+    </Section>
+  );
+}
+
 function AccountSection() {
   const me = useMe();
   return (
@@ -142,8 +200,8 @@ function AccountSection() {
           <Badge variant="outline">{me.data.authSource === "access" ? "Cloudflare Access" : "bypass local (dev)"}</Badge>
           <Badge variant="outline">{me.data.timezone}</Badge>
           {me.data.authSource === "access" && (
-            <Button variant="ghost" size="sm" asChild className="ml-auto">
-              <a href="/cdn-cgi/access/logout"><LogOutIcon /> Sair</a>
+            <Button variant="ghost" size="sm" className="ml-auto" onClick={() => void signOut()}>
+              <LogOutIcon /> Sair
             </Button>
           )}
         </div>
@@ -169,6 +227,7 @@ export function SettingsPage() {
         </ul>
       </Section>
       <AccountSection />
+      <OfflineSection />
       <SystemSection />
       <AuditSection />
     </Page>

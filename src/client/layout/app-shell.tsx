@@ -1,8 +1,9 @@
-import { useMemo } from "react";
-import { Outlet, useNavigate } from "react-router";
+import { useEffect, useMemo } from "react";
+import { Outlet, useNavigate, useSearchParams } from "react-router";
 import { Toaster } from "@/components/ui/sonner";
 import { useUiState } from "@/app/ui-state";
 import { CommandPalette } from "@/features/command-palette/command-palette";
+import { OfflineBanner } from "@/features/offline/offline-banner";
 import { QuickCaptureDialog } from "@/features/inbox/quick-capture-dialog";
 import type { ShortcutBinding } from "@/features/shortcuts/engine";
 import { NAVIGATION_SHORTCUTS } from "@/features/shortcuts/global-shortcuts";
@@ -46,6 +47,14 @@ function Shell() {
   );
   useShortcuts(bindings);
 
+  // Home-screen shortcut "Captura rápida" opens /?capture=1.
+  const [params, setParams] = useSearchParams();
+  useEffect(() => {
+    if (params.get("capture") !== "1") return;
+    setCaptureOpen(true);
+    setParams((p) => { p.delete("capture"); return p; }, { replace: true });
+  }, [params, setParams, setCaptureOpen]);
+
   return (
     <div className="flex h-full">
       <a href="#main" className="sr-only focus:not-sr-only focus:fixed focus:top-2 focus:left-2 focus:z-50 focus:rounded-md focus:bg-background focus:px-3 focus:py-2 focus:shadow">
@@ -54,6 +63,7 @@ function Shell() {
       <Sidebar collapsed={collapsed} onToggle={toggleSidebar} />
       <div className="flex min-w-0 flex-1 flex-col">
         <MobileTopbar />
+        <OfflineBanner />
         <main id="main" tabIndex={-1} className="min-h-0 flex-1 overflow-y-auto outline-none">
           <Outlet />
         </main>

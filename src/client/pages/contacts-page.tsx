@@ -14,10 +14,10 @@ import { Textarea } from "@/components/ui/textarea";
 import { useRestoreEntity, useTrashEntity } from "@/features/para/queries";
 import { useAddInteraction, useContact, useContacts, useCreateContact, useDeleteInteraction, useUpdateContact } from "@/features/personal/queries";
 import { Page, PageHeader } from "@/layout/page";
-import { ApiError } from "@/lib/api";
 import { formatDateTime, formatRelative } from "@/lib/format";
+import { toastError } from "@/lib/toast-error";
 
-const onError = (e: unknown) => toast.error(e instanceof ApiError ? e.message : "Erro");
+const onError = (e: unknown) => toastError(e, "Erro");
 const REL_LABEL: Record<Contact["relationship"], string> = { family: "Família", friend: "Amizade", colleague: "Trabalho", client: "Cliente", mentor: "Mentoria", acquaintance: "Conhecido(a)", other: "Outro" };
 const TYPE_LABEL: Record<(typeof INTERACTION_TYPE)[number], string> = { call: "Ligação", meeting: "Encontro", message: "Mensagem", email: "E-mail", event: "Evento", other: "Outro" };
 const bday = (c: Contact) => (c.birthday ? `${c.birthday.slice(8)}/${c.birthday.slice(5, 7)}` : "");
