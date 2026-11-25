@@ -1,3 +1,4 @@
+import "../shared/zod-setup";
 import { createApp } from "./app";
 
 const app = createApp();

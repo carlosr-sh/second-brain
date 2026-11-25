@@ -3,11 +3,29 @@
   "compilerOptions": {
     "composite": true,
     "tsBuildInfoFile": "./node_modules/.tmp/tsconfig.app.tsbuildinfo",
-    "lib": ["ES2022", "DOM", "DOM.Iterable"],
+    "lib": [
+      "ES2022",
+      "DOM",
+      "DOM.Iterable"
+    ],
     "jsx": "react-jsx",
-    "types": ["vite/client"],
+    "types": [
+      "vite/client",
+      "@testing-library/jest-dom/vitest"
+    ],
     "baseUrl": ".",
-    "paths": { "@/*": ["src/client/*"], "@shared/*": ["src/shared/*"] }
+    "paths": {
+      "@/*": [
+        "src/client/*"
+      ],
+      "@shared/*": [
+        "src/shared/*"
+      ]
+    }
   },
-  "include": ["src/client", "src/shared"]
+  "include": [
+    "src/client",
+    "src/shared",
+    "tests/client"
+  ]
 }

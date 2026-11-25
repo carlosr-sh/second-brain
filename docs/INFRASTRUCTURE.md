@@ -98,7 +98,9 @@ O estado local de D1/R2 fica em `.wrangler/state` (ignorado pelo git).
 |---|---|
 | `pnpm dev` | Vite + Worker no workerd, com HMR |
 | `pnpm build` | `tsc -b` (todos os projetos) + build da SPA e do Worker |
-| `pnpm test` | Suíte Vitest dentro do workerd |
+| `pnpm test` | Vitest: projeto `worker` (workerd) + projeto `client` (happy-dom) |
+| `pnpm test:e2e` | Playwright contra o stack de dev (desktop + mobile) |
+| `pnpm test:csp` | Após `pnpm build`: roda o build de produção sob a CSP de produção |
 | `pnpm typecheck` | Somente checagem de tipos |
 | `pnpm db:generate` | Gera nova migração SQL a partir do schema Drizzle |
 | `pnpm db:migrate:local` / `:remote` | Aplica migrações pendentes |

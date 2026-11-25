@@ -16,4 +16,6 @@
 | R12 | Ecossistema em movimento: `vitest-pool-workers` foi **renomeado** para `@cloudflare/vitest-plugin` durante este trabalho; Vite 8/Vitest 5 são recentes | Quebras em atualizações | Versões travadas no `pnpm-lock.yaml`; atualizações em PR com suíte completa |
 | R13 | Banco único em uma região primária | Latência maior longe da região | `--location sam`; D1 read replication se necessário (uso single-user é leve) |
 | R14 | Dependência do Access como fronteira principal | Política mal configurada exporia o app | Validação própria do JWT + checagem do e-mail + auditoria de identidade não autorizada |
-| R15 | Perda do container de desenvolvimento (efêmero) | Código não commitado se perde | Versionar e enviar para um repositório Git remoto |
+| R15 | Perda do container de desenvolvimento (efêmero) | Commits locais se perdem se a sessão acabar | Repositório `carlosr-sh/second-brain` criado; **push bloqueado até instalar o Claude GitHub App** |
+| R16 | Bibliotecas que usam `eval`/`new Function` violam a CSP de produção (caso real: probe JIT do Zod 4) | Funciona em dev, quebra ou polui relatórios em produção | `z.config({ jitless: true })`; `pnpm test:csp` testa o build real sob a CSP real; obrigatório para novas dependências |
+| R17 | Registry do shadcn/ui inacessível na rede desta sessão | CLI do shadcn não funciona aqui | Componentes escritos no mesmo padrão; `components.json` pronto para uso futuro |

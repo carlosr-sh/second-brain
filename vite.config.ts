@@ -18,5 +18,10 @@ export default defineConfig({
       "@shared": fileURLToPath(new URL("./src/shared", import.meta.url)),
     },
   },
-  build: { sourcemap: false },
+  build: {
+    sourcemap: false,
+    // Performance budget: initial JS <= ~200 KB gzip (~650 KB minified).
+    // Heavy modules (editor, charts) must be lazy-loaded per route.
+    chunkSizeWarningLimit: 650,
+  },
 });

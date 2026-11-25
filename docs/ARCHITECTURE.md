@@ -66,9 +66,17 @@ second-brain/
 │  │  ├─ db/schema/        # schema Drizzle por domínio (para, knowledge, personal, finance, system)
 │  │  └─ lib/              # utilitários (erros, metadados da requisição)
 │  └─ client/              # FRONTEND (React SPA)
-│     ├─ components/ hooks/ lib/
+│     ├─ app/              # navegação (registro de módulos), rotas, providers, estado de UI
+│     ├─ layout/           # shell: sidebar, topbar mobile, Page
+│     ├─ components/ui/    # design system (padrão shadcn/ui)
+│     ├─ features/         # por funcionalidade: api/hooks/componentes (inbox, theme, shortcuts…)
+│     ├─ pages/            # telas (carregadas sob demanda)
+│     └─ lib/              # api client, query client, formatação, filtro de busca
 ├─ migrations/             # SQL gerado pelo drizzle-kit, aplicado pelo Wrangler
-├─ tests/                  # Vitest no workerd (unitários + integração + integridade do banco)
+├─ tests/worker/           # Vitest no workerd (API, auth, integridade do banco)
+├─ tests/client/           # Vitest no happy-dom (lógica e componentes do front)
+├─ e2e/                    # Playwright (fluxos reais no navegador, desktop e mobile)
+├─ scripts/                # verify-prod-csp.mjs (build de produção sob a CSP de produção)
 ├─ docs/                   # esta documentação
 ├─ wrangler.jsonc          # bindings e configuração do Worker
 ├─ vite.config.ts          # build único: SPA + Worker
@@ -143,3 +151,34 @@ routes  ──►  services  ──►  repositories  ──►  D1 / R2
 | `development` | `pnpm dev` (Vite + workerd local, D1/R2 em `.wrangler/state`) | bypass local |
 | `test` | `pnpm test` (Vitest no workerd, D1/R2 efêmeros) | JWKS local gerada no teste |
 | `production` | `pnpm deploy` → domínio próprio atrás do Access | JWT do Access obrigatório |
+
+## 10. Frontend (Fase 2)
+
+```
+main.tsx → Providers (QueryClient → Theme → Tooltip → UiState → SessionGuard) → RouterProvider
+                                                                                 └─ AppShell (sidebar, paleta, captura, atalhos)
+                                                                                     └─ <Outlet/> → páginas (lazy)
+```
+
+* **Estado do servidor**: TanStack Query (chaves centralizadas em `lib/query-client.ts`); mutações com
+  atualização otimista e rollback em caso de erro.
+* **Preferências**: registro tipado em `src/shared/settings.ts` (Zod + default por chave), salvo no servidor e
+  espelhado em `localStorage` apenas para a primeira pintura (tema e sidebar sem "piscar").
+* **Navegação declarativa**: `app/navigation.ts` gera sidebar, paleta e atalhos `G`→tecla.
+* **Atalhos**: `features/shortcuts/engine.ts`, lógica pura e testada; teclas simples são ignoradas
+  enquanto se digita (exceto se o campo estiver num diálogo em animação de saída).
+* **Sessão**: `lib/api.ts` usa `redirect: "manual"`; um redirect do Access ou 401 dispara a tela "Sua sessão expirou".
+* **Code splitting**: cada página é um chunk; orçamento de JS inicial ≤ ~200 KB gzip.
+* **CSP e bibliotecas**: o Zod roda em modo `jitless` (`src/shared/zod-setup.ts`), senão seu teste de `eval`
+  viola a CSP. Qualquer nova dependência deve passar em `pnpm test:csp`.
+
+### Atalhos
+
+| Tecla | Ação |
+|---|---|
+| ⌘/Ctrl + K | Paleta de comandos |
+| C | Captura rápida |
+| [ | Recolher/expandir sidebar |
+| ? | Ajuda de atalhos |
+| G → H/I/P/A/R/X/T/M/B/N/L/J/F/C/S | Ir para módulo |
+| ⌘/Ctrl + Enter | Salvar formulário |
