@@ -95,7 +95,7 @@ export const inboxConvertRoutes = new Hono<AppEnv>().post("/:id/convert-to-task"
   ok<Task>(c, await c.get("services").tasks.convertFromInbox(idOf(c), await parseJsonBody(c, convertInboxToTaskSchema)), 201),
 );
 
-const entitySchema = z.enum(["area", "goal", "project", "task", "note", "notebook", "resource", "bookmark", "book"]);
+const entitySchema = z.enum(["area", "goal", "project", "task", "note", "notebook", "resource", "bookmark", "book", "account", "category", "transaction", "habit", "journal", "contact"]);
 export const trashRoutes = new Hono<AppEnv>()
   .get("/", async (c) => ok<TrashItem[]>(c, await c.get("services").trash.list()))
   .delete("/:entity/:id", async (c) => {

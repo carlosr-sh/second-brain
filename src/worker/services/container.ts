@@ -15,6 +15,12 @@ import { TagRepository } from "../repositories/knowledge/tag.repository";
 import { FileService } from "./knowledge/file.service";
 import { BookmarkService, BookService, NotebookService, ResourceService, SearchService, TagService } from "./knowledge/library.service";
 import { NoteService } from "./knowledge/note.service";
+import { AccountRepository, CategoryRepository, TransactionRepository } from "../repositories/personal/finance.repository";
+import { ContactRepository } from "../repositories/personal/contact.repository";
+import { HabitRepository } from "../repositories/personal/habit.repository";
+import { JournalRepository } from "../repositories/personal/journal.repository";
+import { AccountService, CategoryService, TransactionService } from "./personal/finance.service";
+import { ContactService, HabitService, JournalService } from "./personal/life.service";
 import { SettingsRepository } from "../repositories/settings.repository";
 import { SystemRepository } from "../repositories/system.repository";
 import { isoDateIn } from "../../shared/time";
@@ -52,6 +58,12 @@ export interface Services {
   books: BookService;
   files: FileService;
   search: SearchService;
+  accounts: AccountService;
+  categories: CategoryService;
+  transactions: TransactionService;
+  habits: HabitService;
+  journal: JournalService;
+  contacts: ContactService;
 }
 
 export function createServices(env: Env, environment: string, timezone: string): Services {
@@ -69,7 +81,15 @@ export function createServices(env: Env, environment: string, timezone: string):
     bookmark: new BookmarkRepository(db),
     book: new BookRepository(db),
     file: new FileRepository(db),
+    account: new AccountRepository(db),
+    category: new CategoryRepository(db),
+    transaction: new TransactionRepository(db, env.DB),
+    habit: new HabitRepository(db),
+    journal: new JournalRepository(db),
+    contact: new ContactRepository(db),
   };
+  const today = () => isoDateIn(new Date(), timezone);
+  const tx = repos.transaction;
   return {
     db,
     audit: new AuditService(new AuditLogRepository(db)),
@@ -84,10 +104,18 @@ export function createServices(env: Env, environment: string, timezone: string):
     areas: new AreaService(repos.area),
     goals: new GoalService(repos.goal, repos.area),
     projects: new ProjectService(repos.project, repos.area, repos.goal),
-    tasks: new TaskService(repos.task, repos.project, repos.area, repos.inbox, () => isoDateIn(new Date(), timezone)),
+    tasks: new TaskService(repos.task, repos.project, repos.area, repos.inbox, today),
     trash: new TrashService(new TrashRepository(env.DB), {
       area: repos.area, goal: repos.goal, project: repos.project, task: repos.task, note: repos.note,
       notebook: repos.notebook, resource: repos.resource, bookmark: repos.bookmark, book: repos.book,
+      account: repos.account, category: repos.category, habit: repos.habit, journal: repos.journal, contact: repos.contact,
+      transaction: {
+        findById: async (id: string) => {
+          const r = await tx.findById(id);
+          return r && { ...r, title: r.description };
+        },
+        purge: (id: string) => tx.purge(id),
+      },
     }),
     notes: new NoteService(repos.note, repos.tag, { projects: repos.project, areas: repos.area, resources: repos.resource, notebooks: repos.notebook, books: repos.book }),
     inboxRepo: repos.inbox,
@@ -98,5 +126,11 @@ export function createServices(env: Env, environment: string, timezone: string):
     books: new BookService(repos.book, repos.tag, repos.resource, repos.file),
     files: new FileService(repos.file, env.FILES),
     search: new SearchService(new SearchRepository(env.DB)),
+    accounts: new AccountService(repos.account),
+    categories: new CategoryService(repos.category),
+    transactions: new TransactionService(repos.transaction, repos.account, repos.category, repos.contact, repos.file),
+    habits: new HabitService(repos.habit, repos.area, repos.goal, today),
+    journal: new JournalService(repos.journal),
+    contacts: new ContactService(repos.contact, today),
   };
 }

@@ -3,6 +3,7 @@ import type {
   Area, CreateAreaInput, CreateGoalInput, CreateProjectInput, CreateTaskInput, Goal, Project, Task, TaskUpdateResult,
   TrashEntity, TrashItem, UpdateAreaInput, UpdateGoalInput, UpdateProjectInput, UpdateTaskInput,
 } from "@shared/para";
+import { ENTITY_PATH } from "@shared/para";
 import { toast } from "sonner";
 import { isoDateIn } from "@shared/time";
 import { api } from "@/lib/api";
@@ -66,13 +67,13 @@ export const useCreateTask = () => useParaMutation((v: CreateTaskInput) => api<T
 export function useTrashEntity() {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: ({ entity, id }: { entity: TrashEntity; id: string }) => api<void>(`/${entity}s/${id}`, { method: "DELETE" }),
+    mutationFn: ({ entity, id }: { entity: TrashEntity; id: string }) => api<void>(`/${ENTITY_PATH[entity]}/${id}`, { method: "DELETE" }),
     onSettled: (_d, _e, { entity, id }) =>
       qc.invalidateQueries({ queryKey: paraKeys.all, predicate: (q) => !(q.queryKey[1] === entity && q.queryKey[2] === id) }),
   });
 }
 export const useRestoreEntity = () =>
-  useParaMutation(({ entity, id }: { entity: TrashEntity; id: string }) => api<unknown>(`/${entity}s/${id}/restore`, { method: "POST" }));
+  useParaMutation(({ entity, id }: { entity: TrashEntity; id: string }) => api<unknown>(`/${ENTITY_PATH[entity]}/${id}/restore`, { method: "POST" }));
 export const usePurgeEntity = () =>
   useParaMutation(({ entity, id }: { entity: TrashEntity; id: string }) => api<void>(`/trash/${entity}/${id}`, { method: "DELETE" }));
 export const useEmptyTrash = () => useParaMutation(() => api<{ purged: number }>("/trash", { method: "DELETE" }));

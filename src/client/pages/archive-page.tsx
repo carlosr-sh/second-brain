@@ -15,6 +15,7 @@ import { formatDateTime } from "@/lib/format";
 
 const ENTITY_LABEL: Record<TrashEntity, string> = {
   area: "Área", goal: "Meta", project: "Projeto", task: "Tarefa", note: "Nota", notebook: "Caderno", resource: "Recurso", bookmark: "Link", book: "Livro",
+  account: "Conta", category: "Categoria", transaction: "Lançamento", habit: "Hábito", journal: "Diário", contact: "Contato",
 };
 const onError = (e: unknown) => toast.error(e instanceof ApiError ? e.message : "Erro");
 

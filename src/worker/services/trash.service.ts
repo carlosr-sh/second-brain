@@ -31,7 +31,10 @@ export class TrashService {
   async empty(): Promise<number> {
     const items = await this.trash.list();
     // Children before parents (FK order).
-    const order: TrashEntity[] = ["task", "note", "bookmark", "book", "project", "goal", "resource", "notebook", "area"];
+    const order: TrashEntity[] = [
+      "transaction", "task", "note", "journal", "bookmark", "book", "habit", "contact",
+      "project", "goal", "resource", "notebook", "area", "account", "category",
+    ];
     let purged = 0;
     for (const entity of order) {
       for (const item of items.filter((i) => i.entity === entity)) {

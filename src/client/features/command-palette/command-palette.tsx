@@ -45,12 +45,16 @@ export function CommandPalette({ onToggleSidebar }: { onToggleSidebar: () => voi
 
   const ENTITY_LABEL: Record<SearchEntity, string> = {
     note: "Nota", task: "Tarefa", project: "Projeto", area: "Área", goal: "Meta", resource: "Recurso", bookmark: "Link", book: "Livro",
+    journal: "Diário", contact: "Contato", transaction: "Lançamento",
   };
-  const ENTITY_ICON = (e: SearchEntity) => MODULES.find((m) => m.id === ({ note: "notes", task: "tasks", project: "projects", area: "areas", goal: "goals", resource: "resources", bookmark: "bookmarks", book: "bookshelf" } as const)[e])?.icon;
+  const ENTITY_ICON = (e: SearchEntity) => MODULES.find((m) => m.id === ({ note: "notes", task: "tasks", project: "projects", area: "areas", goal: "goals", resource: "resources", bookmark: "bookmarks", book: "bookshelf", journal: "journal", contact: "contacts", transaction: "finance" } as const)[e])?.icon;
   const openResult = (r: SearchResult) => {
     const routes: Record<SearchEntity, string | null> = {
       note: `/notes/${r.id}`, task: null, project: `/projects/${r.id}`, area: `/areas/${r.id}`, goal: "/goals",
       resource: `/resources/${r.id}`, bookmark: "/bookmarks", book: "/bookshelf",
+      // Journal entries are indexed with the date first in the title.
+      journal: `/journal/${r.title.replace(/[\u0002\u0003]/g, "").slice(0, 10)}`,
+      contact: `/contacts/${r.id}`, transaction: `/finance?tab=transactions&tx=${r.id}`,
     };
     const to = routes[r.entity];
     if (to) navigate(to);

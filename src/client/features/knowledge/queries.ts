@@ -3,6 +3,7 @@ import type {
   Book, Bookmark, CreateBookInput, CreateBookmarkInput, CreateNoteInput, Note, Notebook, NoteRef, NoteSummary, Resource, SearchEntity,
   SearchResult, StoredFile, Tag, Taggable, UpdateBookInput, UpdateBookmarkInput, UpdateNoteInput,
 } from "@shared/knowledge";
+import { ENTITY_PATH } from "@shared/para";
 import { api, ApiError } from "@/lib/api";
 
 export const kbKeys = {
@@ -96,7 +97,7 @@ export const useUpdateBook = () => useKbMutation(({ id, ...v }: UpdateBookInput 
 
 /** Generic soft delete for knowledge entities (trash), refreshing PARA too (shared trash view). */
 export const useTrashKb = () =>
-  useKbMutation(({ entity, id }: { entity: "note" | "notebook" | "resource" | "bookmark" | "book"; id: string }) => api<void>(`/${entity}s/${id}`, { method: "DELETE" }), [["para"]]);
+  useKbMutation(({ entity, id }: { entity: "note" | "notebook" | "resource" | "bookmark" | "book"; id: string }) => api<void>(`/${ENTITY_PATH[entity]}/${id}`, { method: "DELETE" }), [["para"]]);
 
 /** Multipart upload (not JSON): validated server-side by magic bytes. */
 export async function uploadFile(file: File): Promise<StoredFile> {

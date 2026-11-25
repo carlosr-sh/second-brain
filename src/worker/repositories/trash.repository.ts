@@ -18,6 +18,13 @@ const QUERIES = [
   `select 'resource' as entity, id, name as title, deleted_at from resources where deleted_at is not null`,
   `select 'bookmark' as entity, id, title, deleted_at from bookmarks where deleted_at is not null`,
   `select 'book' as entity, id, title, deleted_at from books where deleted_at is not null`,
+  `select 'account' as entity, id, name as title, deleted_at from accounts where deleted_at is not null`,
+  `select 'category' as entity, id, name as title, deleted_at from financial_categories where deleted_at is not null`,
+  // A transfer appears once (its outgoing leg); restoring/purging it handles both legs.
+  `select 'transaction' as entity, id, description as title, deleted_at from transactions where deleted_at is not null and (transfer_group_id is null or amount_cents < 0)`,
+  `select 'habit' as entity, id, name as title, deleted_at from habits where deleted_at is not null`,
+  `select 'journal' as entity, id, entry_date || coalesce(' — ' || title, '') as title, deleted_at from journal_entries where deleted_at is not null`,
+  `select 'contact' as entity, id, name as title, deleted_at from contacts where deleted_at is not null`,
   `select 'task' as entity, t.id, t.title, t.deleted_at from tasks t
      left join projects p on p.id = t.project_id
      left join tasks parent on parent.id = t.parent_task_id

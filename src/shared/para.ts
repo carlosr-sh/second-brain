@@ -164,7 +164,16 @@ export interface TaskUpdateResult {
   spawned: Task | null;
 }
 
-export type TrashEntity = "area" | "goal" | "project" | "task" | "note" | "notebook" | "resource" | "bookmark" | "book";
+export type TrashEntity =
+  | "area" | "goal" | "project" | "task" | "note" | "notebook" | "resource" | "bookmark" | "book"
+  | "account" | "category" | "transaction" | "habit" | "journal" | "contact";
+
+/** REST collection path per trashable entity (explicit: "category" → "categories"). */
+export const ENTITY_PATH: Record<TrashEntity, string> = {
+  area: "areas", goal: "goals", project: "projects", task: "tasks", note: "notes", notebook: "notebooks", resource: "resources",
+  bookmark: "bookmarks", book: "books", account: "accounts", category: "categories", transaction: "transactions", habit: "habits",
+  journal: "journals", contact: "contacts",
+};
 export interface TrashItem {
   entity: TrashEntity;
   id: string;

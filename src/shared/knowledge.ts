@@ -99,7 +99,7 @@ export const createBookSchema = z.object({
 export const updateBookSchema = nonEmpty(createBookSchema.omit({ tagIds: true }).partial().extend({ archived: z.boolean().optional() }));
 
 /* ---------- search ---------- */
-export const SEARCH_ENTITIES = ["note", "task", "project", "area", "goal", "resource", "bookmark", "book"] as const;
+export const SEARCH_ENTITIES = ["note", "task", "project", "area", "goal", "resource", "bookmark", "book", "journal", "contact", "transaction"] as const;
 export type SearchEntity = (typeof SEARCH_ENTITIES)[number];
 export const searchQuerySchema = z.object({
   q: z.string().trim().min(1).max(200),
