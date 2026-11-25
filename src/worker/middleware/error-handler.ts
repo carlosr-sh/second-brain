@@ -24,6 +24,13 @@ export const errorHandler: ErrorHandler<AppEnv> = (err, c) => {
       err.status === 413
         ? new AppError(413, "PAYLOAD_TOO_LARGE", "Request body too large")
         : new AppError(err.status === 400 ? 400 : 500, err.status === 400 ? "BAD_REQUEST" : "INTERNAL_ERROR", err.status === 400 ? "Bad request" : "Unexpected error");
+  } else if (constraintKind(err)) {
+    const kind = constraintKind(err);
+    appError =
+      kind === "check"
+        ? new AppError(400, "VALIDATION_FAILED", "Os dados violam uma regra de integridade")
+        : new AppError(409, "CONFLICT", kind === "fk" ? "Registro relacionado inexistente ou em uso" : "Registro duplicado");
+    console.warn(JSON.stringify({ event: "db.constraint", kind, requestId }));
   } else if (err instanceof ConfigError) {
     console.error(JSON.stringify({ event: "config.invalid", issues: err.issues, requestId }));
     appError = new AppError(500, "CONFIGURATION_ERROR", "Server is not configured correctly");
@@ -55,6 +62,17 @@ export const apiNotFound: NotFoundHandler<AppEnv> = (c) => {
   const body: ApiErrorBody = { error: { code: "NOT_FOUND", message: "Route not found", requestId: c.get("requestId") } };
   return c.json(body, 404);
 };
+
+/** SQLite constraint violations surfaced by D1 (possibly wrapped by Drizzle in `cause`). */
+function constraintKind(err: unknown): "fk" | "check" | "unique" | null {
+  for (let e: unknown = err, depth = 0; e instanceof Error && depth < 4; e = e.cause, depth++) {
+    const m = e.message;
+    if (m.includes("FOREIGN KEY constraint failed")) return "fk";
+    if (m.includes("CHECK constraint failed")) return "check";
+    if (m.includes("UNIQUE constraint failed")) return "unique";
+  }
+  return null;
+}
 
 function escapeHtml(s: string): string {
   return s.replace(/[&<>"']/g, (ch) => `&#${ch.charCodeAt(0)};`);

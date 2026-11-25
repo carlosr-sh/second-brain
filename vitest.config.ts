@@ -37,7 +37,7 @@ export default defineConfig(async () => {
           test: {
             name: "client",
             environment: "happy-dom",
-            include: ["tests/client/**/*.test.{ts,tsx}"],
+            include: ["tests/client/**/*.test.{ts,tsx}", "tests/shared/**/*.test.ts"],
             setupFiles: ["./tests/client/setup.ts"],
           },
         },

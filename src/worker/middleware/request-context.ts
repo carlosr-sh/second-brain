@@ -14,6 +14,6 @@ export const requestId = (): MiddlewareHandler<AppEnv> => async (c, next) => {
 export const appContext = (): MiddlewareHandler<AppEnv> => async (c, next) => {
   const config = loadConfig(c.env); // throws ConfigError -> 500 via onError
   c.set("config", config);
-  c.set("services", createServices(c.env, config.ENVIRONMENT));
+  c.set("services", createServices(c.env, config.ENVIRONMENT, config.APP_TIMEZONE));
   await next();
 };

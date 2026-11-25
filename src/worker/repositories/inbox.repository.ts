@@ -20,6 +20,11 @@ export class InboxRepository {
       .limit(limit);
   }
 
+  async findById(id: string): Promise<InboxItemRow | undefined> {
+    const [row] = await this.db.select().from(inboxItems).where(eq(inboxItems.id, id));
+    return row;
+  }
+
   async countOpen(): Promise<number> {
     const [row] = await this.db
       .select({ n: count() })

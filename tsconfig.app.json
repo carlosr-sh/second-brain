@@ -26,6 +26,7 @@
   "include": [
     "src/client",
     "src/shared",
-    "tests/client"
+    "tests/client",
+    "tests/shared"
   ]
 }
