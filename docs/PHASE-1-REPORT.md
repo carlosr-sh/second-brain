@@ -29,7 +29,7 @@ origem do CSRF → 3 testes falham. Ou seja, os testes realmente protegem essas 
 
 | Item | Motivo | Próximo passo |
 |---|---|---|
-| Deploy na Cloudflare | Sessão sem credenciais Cloudflare; `api.cloudflare.com` bloqueado pelo proxy de rede | Você executa o passo a passo de `INFRASTRUCTURE.md` §3 (ou fornece um API token para eu fazer) |
+| Deploy na Cloudflare | ✅ Feito em 2026-11-25 via GitHub Actions | — |
 | Teste ponta a ponta com o Access real | Depende do deploy | Checklist §4 abaixo |
 | CI (GitHub Actions) | Ainda não há repositório remoto | Criar quando o repositório existir |
 
@@ -43,10 +43,12 @@ origem do CSRF → 3 testes falham. Ou seja, os testes realmente protegem essas 
 
 ## 4. Checklist pós-deploy (a executar)
 
-- [ ] Aba anônima em `https://brain.seudominio.com` → tela de login do Access (não a SPA).
-- [ ] `https://second-brain.<conta>.workers.dev` → não resolve (workers_dev desativado).
+- [x] Sem login → 302 para `ofulano.cloudflareaccess.com` em todas as rotas, inclusive API e assets (verificado em 2026-11-25).
+- [x] Header `Cf-Access-Jwt-Assertion` forjado → continua 302 (o Access barra antes do Worker).
+- [x] Antes dos secrets do Access → 500 em tudo, com CSP/HSTS presentes (fail closed verificado em produção).
+- [x] `workers_dev: false` e `preview_urls: false` no deploy (sem URL alternativa).
 - [ ] Após login: a página mostra seu e-mail "via Cloudflare Access", ambiente `production`.
 - [ ] D1 e R2 verdes; migração `0000_initial_schema.sql` listada.
 - [ ] "Verificar integridade do banco" → "Integridade OK".
-- [ ] Headers: `curl -sI` (com cookie) mostra CSP sem `unsafe-inline` em `script-src` e HSTS.
+- [x] Headers em produção: CSP com `script-src 'self'`, HSTS, `X-Frame-Options: DENY`, `nosniff`.
 - [ ] Login com outro e-mail é barrado pelo Access (e, se passar, o Worker responde 403 e audita).

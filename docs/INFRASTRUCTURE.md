@@ -76,6 +76,24 @@ responde 500 em todas as rotas (fail closed) e loga **quais campos** estão inv�
   eles injetam scripts inline que a CSP (corretamente) bloqueia.
 * SSL/TLS: *Full (strict)*; *Always Use HTTPS*: on; TLS mínimo 1.2.
 
+## 3.1 Deploy contínuo (como está em produção)
+
+O deploy **não** é feito da máquina de desenvolvimento, e sim pelo GitHub Actions
+(`.github/workflows/ci-deploy.yml`):
+
+* Todo push ou PR roda o job `ci`: typecheck, testes, build, `test:csp` e E2E.
+* Na `main`, se o `ci` passar, o job `deploy` aplica as migrações D1 pendentes e depois publica o Worker.
+* Secret do repositório: `CLOUDFLARE_API_TOKEN`. Variável opcional: `CLOUDFLARE_ACCOUNT_ID`.
+* As actions são fixadas por hash de commit.
+* Os secrets do Worker (`OWNER_EMAIL`, `ACCESS_TEAM_DOMAIN`, `ACCESS_AUD`) ficam na Cloudflare e
+  **persistem entre deploys**.
+
+Por que não fazer o deploy pela sessão de desenvolvimento: o upload de assets do Workers usa um JWT
+temporário no header `Authorization`, e o proxy de credenciais do ambiente cloud sobrescreve esse
+header com o API token. Resultado: 401. Outros comandos (D1, R2, `secret put`) funcionam daqui.
+
+Produção: `https://brain.ofulano.xyz` · Access: time `ofulano.cloudflareaccess.com` · D1 em `ENAM`.
+
 ## 4. Desenvolvimento local
 
 ```bash
