@@ -1,0 +1,9 @@
+@import "tailwindcss";
+
+/* Phase 1 placeholder tokens; the full design system arrives in Phase 2. */
+@theme {
+  --font-sans: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+}
+
+:root { color-scheme: light dark; }
+body { @apply bg-white text-neutral-900 antialiased dark:bg-neutral-950 dark:text-neutral-100; }

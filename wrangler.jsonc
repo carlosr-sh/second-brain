@@ -1,0 +1,54 @@
+/**
+ * Cloudflare Worker configuration — see docs/INFRASTRUCTURE.md for every binding.
+ *
+ * Secrets (NEVER committed; set with `wrangler secret put <NAME>`):
+ *   OWNER_EMAIL         the single authorized email address
+ *   ACCESS_TEAM_DOMAIN  e.g. "myteam.cloudflareaccess.com"
+ *   ACCESS_AUD          Application Audience (AUD) tag of the Access application
+ * Local development uses `.dev.vars` (git-ignored) instead.
+ */
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "second-brain",
+  "main": "src/worker/index.ts",
+  "compatibility_date": "2026-11-20",
+
+  // The app is only reachable through a custom domain protected by
+  // Cloudflare Access. The *.workers.dev URL and preview URLs are disabled so
+  // that nothing can bypass Access.
+  "workers_dev": false,
+  "preview_urls": false,
+
+  "assets": {
+    "binding": "ASSETS",
+    "not_found_handling": "single-page-application",
+    // Every request (API and static assets) passes through the Worker first,
+    // so the Access JWT is verified and security headers are applied
+    // uniformly (defense in depth on top of Access itself).
+    "run_worker_first": true
+  },
+
+  "d1_databases": [
+    {
+      "binding": "DB",
+      "database_name": "second-brain",
+      // Fill in after `wrangler d1 create second-brain` (see docs/INFRASTRUCTURE.md)
+      "database_id": "00000000-0000-0000-0000-000000000000",
+      "migrations_dir": "migrations"
+    }
+  ],
+
+  "r2_buckets": [
+    {
+      "binding": "FILES",
+      "bucket_name": "second-brain-files"
+    }
+  ],
+
+  "vars": {
+    "ENVIRONMENT": "production",
+    "APP_TIMEZONE": "America/Recife"
+  },
+
+  "observability": { "enabled": true }
+}

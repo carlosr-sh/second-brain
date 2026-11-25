@@ -1,0 +1,8 @@
+# Copy to .dev.vars (git-ignored) for local development.
+ENVIRONMENT=development
+# Identity injected by the local auth bypass. The bypass ONLY works when
+# ENVIRONMENT=development AND the request host is localhost/127.0.0.1.
+DEV_AUTH_EMAIL=owner@example.com
+OWNER_EMAIL=owner@example.com
+ACCESS_TEAM_DOMAIN=example.cloudflareaccess.com
+ACCESS_AUD=dev-audience-tag
