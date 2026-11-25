@@ -1,16 +1,17 @@
 import type { TrashEntity, TrashItem } from "../../shared/para";
 import { conflict, notFound } from "../lib/errors";
-import type { AreaRepository } from "../repositories/area.repository";
-import type { GoalRepository } from "../repositories/goal.repository";
-import type { ProjectRepository } from "../repositories/project.repository";
-import type { TaskRepository } from "../repositories/task.repository";
 import type { TrashRepository } from "../repositories/trash.repository";
+
+interface PurgeableRepo {
+  findById(id: string): Promise<({ deletedAt: Date | null } & ({ name: string } | { title: string })) | undefined>;
+  purge(id: string): Promise<void>;
+}
 
 /** Permanent deletion. Only items already in the trash can be purged. */
 export class TrashService {
   constructor(
     private readonly trash: TrashRepository,
-    private readonly repos: { area: AreaRepository; goal: GoalRepository; project: ProjectRepository; task: TaskRepository },
+    private readonly repos: Record<TrashEntity, PurgeableRepo>,
   ) {}
 
   list(): Promise<TrashItem[]> {
@@ -29,7 +30,8 @@ export class TrashService {
   /** Empties the trash, children before parents. Returns how many items were purged. */
   async empty(): Promise<number> {
     const items = await this.trash.list();
-    const order: TrashEntity[] = ["task", "project", "goal", "area"];
+    // Children before parents (FK order).
+    const order: TrashEntity[] = ["task", "note", "bookmark", "book", "project", "goal", "resource", "notebook", "area"];
     let purged = 0;
     for (const entity of order) {
       for (const item of items.filter((i) => i.entity === entity)) {

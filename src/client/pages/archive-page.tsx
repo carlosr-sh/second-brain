@@ -13,7 +13,9 @@ import { Page, PageHeader } from "@/layout/page";
 import { ApiError } from "@/lib/api";
 import { formatDateTime } from "@/lib/format";
 
-const ENTITY_LABEL: Record<TrashEntity, string> = { area: "Área", goal: "Meta", project: "Projeto", task: "Tarefa" };
+const ENTITY_LABEL: Record<TrashEntity, string> = {
+  area: "Área", goal: "Meta", project: "Projeto", task: "Tarefa", note: "Nota", notebook: "Caderno", resource: "Recurso", bookmark: "Link", book: "Livro",
+};
 const onError = (e: unknown) => toast.error(e instanceof ApiError ? e.message : "Erro");
 
 function Row({ entity, title, meta, children }: { entity: TrashEntity; title: string; meta?: string; children: React.ReactNode }) {

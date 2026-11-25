@@ -164,7 +164,7 @@ export interface TaskUpdateResult {
   spawned: Task | null;
 }
 
-export type TrashEntity = "area" | "goal" | "project" | "task";
+export type TrashEntity = "area" | "goal" | "project" | "task" | "note" | "notebook" | "resource" | "bookmark" | "book";
 export interface TrashItem {
   entity: TrashEntity;
   id: string;

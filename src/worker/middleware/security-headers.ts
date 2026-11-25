@@ -45,9 +45,10 @@ export const securityHeaders = (): MiddlewareHandler<AppEnv> => async (c, next) 
   // Responses coming from fetch()/ASSETS have immutable headers: clone first.
   const res = new Response(c.res.body, c.res);
   for (const [k, v] of Object.entries(STATIC_HEADERS)) res.headers.set(k, v);
-  res.headers.set("Content-Security-Policy", buildCsp(isDev));
+  // A handler may set a STRICTER policy (e.g. uploaded files: sandbox); keep it.
+  if (!res.headers.has("Content-Security-Policy")) res.headers.set("Content-Security-Policy", buildCsp(isDev));
   if (!isDev) res.headers.set("Strict-Transport-Security", "max-age=63072000; includeSubDomains");
-  if (isApiPath(c.req.path)) res.headers.set("Cache-Control", "no-store");
+  if (isApiPath(c.req.path) && !res.headers.has("Cache-Control")) res.headers.set("Cache-Control", "no-store");
   const requestId = c.get("requestId");
   if (requestId) res.headers.set("X-Request-Id", requestId);
   c.res = res;

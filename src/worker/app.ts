@@ -7,10 +7,12 @@ import { apiNotFound, errorHandler } from "./middleware/error-handler";
 import { appContext, requestId } from "./middleware/request-context";
 import { securityHeaders } from "./middleware/security-headers";
 import { inboxRoutes } from "./routes/inbox.routes";
+import { bookmarkRoutes, bookRoutes, fileRoutes, notebookRoutes, noteRoutes, resourceRoutes, searchRoutes, tagAssignRoutes, tagRoutes } from "./routes/knowledge.routes";
 import { areaRoutes, goalRoutes, inboxConvertRoutes, projectRoutes, taskRoutes, trashRoutes } from "./routes/para.routes";
 import { settingsRoutes } from "./routes/settings.routes";
 import { systemRoutes } from "./routes/system.routes";
 import type { AppEnv } from "./types";
+import { MAX_UPLOAD_BYTES } from "../shared/knowledge";
 
 export interface CreateAppOptions {
   auth?: AccessAuthOptions;
@@ -41,15 +43,12 @@ export function createApp(options: CreateAppOptions = {}) {
 
   const api = new Hono<AppEnv>();
   api.use("*", csrfProtection());
-  api.use(
-    "*",
-    bodyLimit({
-      maxSize: JSON_BODY_LIMIT,
-      onError: () => {
-        throw new AppError(413, "PAYLOAD_TOO_LARGE", "Request body too large");
-      },
-    }),
-  );
+  const tooLarge = () => {
+    throw new AppError(413, "PAYLOAD_TOO_LARGE", "Request body too large");
+  };
+  const jsonLimit = bodyLimit({ maxSize: JSON_BODY_LIMIT, onError: tooLarge });
+  const uploadLimit = bodyLimit({ maxSize: MAX_UPLOAD_BYTES + 64 * 1024, onError: tooLarge }); // + multipart overhead
+  api.use("*", (c, next) => (c.req.method === "POST" && c.req.path === "/api/files" ? uploadLimit(c, next) : jsonLimit(c, next)));
   api.route("/", systemRoutes);
   api.route("/settings", settingsRoutes);
   api.route("/inbox", inboxRoutes);
@@ -59,6 +58,15 @@ export function createApp(options: CreateAppOptions = {}) {
   api.route("/projects", projectRoutes);
   api.route("/tasks", taskRoutes);
   api.route("/trash", trashRoutes);
+  api.route("/notes", noteRoutes);
+  api.route("/notebooks", notebookRoutes);
+  api.route("/resources", resourceRoutes);
+  api.route("/tags", tagRoutes);
+  api.route("/bookmarks", bookmarkRoutes);
+  api.route("/books", bookRoutes);
+  api.route("/search", searchRoutes);
+  api.route("/files", fileRoutes);
+  api.route("/", tagAssignRoutes);
   api.notFound(apiNotFound);
   app.route("/api", api);
   app.all("/api/*", apiNotFound);
