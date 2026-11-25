@@ -1,8 +1,12 @@
 import { createDb, type Database } from "../db/client";
 import { AuditLogRepository } from "../repositories/audit-log.repository";
 import { BackupRunRepository } from "../repositories/backup-run.repository";
+import { InboxRepository } from "../repositories/inbox.repository";
+import { SettingsRepository } from "../repositories/settings.repository";
 import { SystemRepository } from "../repositories/system.repository";
 import { AuditService } from "./audit.service";
+import { InboxService } from "./inbox.service";
+import { SettingsService } from "./settings.service";
 import { SystemService } from "./system.service";
 
 /**
@@ -13,6 +17,8 @@ export interface Services {
   db: Database;
   audit: AuditService;
   system: SystemService;
+  settings: SettingsService;
+  inbox: InboxService;
 }
 
 export function createServices(env: Env, environment: string): Services {
@@ -26,5 +32,7 @@ export function createServices(env: Env, environment: string): Services {
       env.FILES,
       environment,
     ),
+    settings: new SettingsService(new SettingsRepository(db)),
+    inbox: new InboxService(new InboxRepository(db)),
   };
 }

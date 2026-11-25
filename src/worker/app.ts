@@ -6,6 +6,8 @@ import { csrfProtection } from "./middleware/csrf";
 import { apiNotFound, errorHandler } from "./middleware/error-handler";
 import { appContext, requestId } from "./middleware/request-context";
 import { securityHeaders } from "./middleware/security-headers";
+import { inboxRoutes } from "./routes/inbox.routes";
+import { settingsRoutes } from "./routes/settings.routes";
 import { systemRoutes } from "./routes/system.routes";
 import type { AppEnv } from "./types";
 
@@ -48,6 +50,8 @@ export function createApp(options: CreateAppOptions = {}) {
     }),
   );
   api.route("/", systemRoutes);
+  api.route("/settings", settingsRoutes);
+  api.route("/inbox", inboxRoutes);
   api.notFound(apiNotFound);
   app.route("/api", api);
   app.all("/api/*", apiNotFound);
