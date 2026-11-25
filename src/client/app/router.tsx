@@ -20,6 +20,15 @@ const AreasPage = lazy(() => import("@/pages/areas-page").then((m) => ({ default
 const AreaDetailPage = lazy(() => import("@/pages/area-detail-page").then((m) => ({ default: m.AreaDetailPage })));
 const GoalsPage = lazy(() => import("@/pages/goals-page").then((m) => ({ default: m.GoalsPage })));
 const ArchivePage = lazy(() => import("@/pages/archive-page").then((m) => ({ default: m.ArchivePage })));
+const NotesPage = lazy(() => import("@/pages/notes-page").then((m) => ({ default: m.NotesPage })));
+const libraryPage = <K extends "NotebooksPage" | "TagsPage" | "ResourcesPage" | "ResourceDetailPage" | "BookmarksPage" | "BookshelfPage">(name: K) =>
+  lazy(() => import("@/pages/library-pages").then((m) => ({ default: m[name] })));
+const NotebooksPage = libraryPage("NotebooksPage");
+const TagsPage = libraryPage("TagsPage");
+const ResourcesPage = libraryPage("ResourcesPage");
+const ResourceDetailPage = libraryPage("ResourceDetailPage");
+const BookmarksPage = libraryPage("BookmarksPage");
+const BookshelfPage = libraryPage("BookshelfPage");
 const ModulePlaceholderPage = lazy(() =>
   import("@/pages/module-placeholder-page").then((m) => ({ default: m.ModulePlaceholderPage })),
 );
@@ -32,12 +41,20 @@ const IMPLEMENTED: Record<string, LazyExoticComponent<ComponentType>> = {
   areas: AreasPage,
   goals: GoalsPage,
   archive: ArchivePage,
+  notes: NotesPage,
+  notebooks: NotebooksPage,
+  tags: TagsPage,
+  resources: ResourcesPage,
+  bookmarks: BookmarksPage,
+  bookshelf: BookshelfPage,
 };
 
 /** Detail routes nested under a module path. */
 const detailRoutes = (): RouteObject[] => [
   { path: "projects/:id", element: withSuspense(<ProjectDetailPage />) },
   { path: "areas/:id", element: withSuspense(<AreaDetailPage />) },
+  { path: "notes/:id", element: withSuspense(<NotesPage />) },
+  { path: "resources/:id", element: withSuspense(<ResourceDetailPage />) },
 ];
 
 function PageFallback() {

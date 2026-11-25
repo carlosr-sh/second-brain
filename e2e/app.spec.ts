@@ -91,8 +91,10 @@ test("shortcut help, 404 and deep-link SPA fallback", async ({ page }) => {
   await page.keyboard.press("Escape");
   await page.goto("/rota/inexistente");
   await expect(page.getByText("Página não encontrada")).toBeVisible();
-  await page.goto("/notes/qualquer-coisa");
-  await expect(page.getByRole("heading", { name: "Notas" })).toBeVisible();
+  await page.goto("/journal/qualquer-coisa"); // module still a placeholder (Phase 5)
+  await expect(page.getByRole("heading", { name: "Diário" })).toBeVisible();
+  await page.goto("/notes/nao-e-um-uuid"); // invalid id: "not found" without hitting the API
+  await expect(page.getByText("Nota não encontrada")).toBeVisible();
 });
 
 test("responses carry the CSP header", async ({ page }) => {

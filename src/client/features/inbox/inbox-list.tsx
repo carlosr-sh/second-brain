@@ -1,4 +1,4 @@
-import { CheckIcon, CheckSquareIcon, ExternalLinkIcon, RotateCcwIcon, Trash2Icon } from "lucide-react";
+import { CheckIcon, CheckSquareIcon, ExternalLinkIcon, StickyNoteIcon, RotateCcwIcon, Trash2Icon } from "lucide-react";
 import { toast } from "sonner";
 import type { InboxItem } from "@shared/inbox";
 import { Button } from "@/components/ui/button";
@@ -6,6 +6,9 @@ import { Hint } from "@/components/ui/tooltip";
 import { formatDateTime, formatRelative } from "@/lib/format";
 import { cn } from "@/lib/utils";
 import { useTaskEditor } from "@/features/tasks/task-editor-context";
+import { useNavigate } from "react-router";
+import { useConvertInboxToNote } from "@/features/knowledge/queries";
+import { ApiError } from "@/lib/api";
 import { useSetInboxProcessed, useTrashInbox } from "./hooks";
 
 function InboxRow({ item, compact }: { item: InboxItem; compact?: boolean }) {
@@ -13,6 +16,8 @@ function InboxRow({ item, compact }: { item: InboxItem; compact?: boolean }) {
   const trash = useTrashInbox();
   const processed = item.processedAt !== null;
   const { openConvert } = useTaskEditor();
+  const toNote = useConvertInboxToNote();
+  const navigate = useNavigate();
 
   return (
     <li className="group flex items-start gap-3 px-4 py-3" data-testid="inbox-item">
@@ -38,6 +43,13 @@ function InboxRow({ item, compact }: { item: InboxItem; compact?: boolean }) {
             <Hint label="Converter em tarefa">
               <Button variant="ghost" size="icon-sm" aria-label="Converter em tarefa" onClick={() => openConvert(item.id, { title: item.content.slice(0, 200), notes: item.content.length > 200 || item.url ? item.content + (item.url && item.url !== item.content ? `\n${item.url}` : "") : null })}>
                 <CheckSquareIcon />
+              </Button>
+            </Hint>
+          )}
+          {!processed && (
+            <Hint label="Converter em nota">
+              <Button variant="ghost" size="icon-sm" aria-label="Converter em nota" onClick={() => toNote.mutate(item.id, { onSuccess: (n) => navigate(`/notes/${n.id}`), onError: (e) => toast.error(e instanceof ApiError ? e.message : "Erro") })}>
+                <StickyNoteIcon />
               </Button>
             </Hint>
           )}

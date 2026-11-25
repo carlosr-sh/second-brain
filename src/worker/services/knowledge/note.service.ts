@@ -1,8 +1,9 @@
 import { uuidv7 } from "../../../shared/uuid";
 import type { CreateNoteInput, Note, NoteRef, NoteSummary, UpdateNoteInput } from "../../../shared/knowledge";
-import { emptyDoc, extractFileIds, extractNoteLinkIds, extractText, type RichDoc } from "../../../shared/rich-text";
+import { docFromText, emptyDoc, extractFileIds, extractNoteLinkIds, extractText, type RichDoc } from "../../../shared/rich-text";
 import { assertLive, badRequest, conflict, notFound } from "../../lib/errors";
 import type { AreaRepository } from "../../repositories/area.repository";
+import type { InboxRepository } from "../../repositories/inbox.repository";
 import type { NotebookRepository, ResourceRepository } from "../../repositories/knowledge/notebook.repository";
 import type { BookRepository } from "../../repositories/knowledge/library.repository";
 import type { NewNote, NoteRepository, NoteRow } from "../../repositories/knowledge/note.repository";
@@ -75,7 +76,18 @@ export class NoteService {
     return { text: extractText(doc), linkTargets, fileIds };
   }
 
-  async create(input: CreateNoteInput): Promise<Note> {
+  /** Inbox → note: creates the note and marks the item processed atomically. */
+  async convertFromInbox(inboxId: string, inbox: InboxRepository): Promise<Note> {
+    const item = await inbox.findById(inboxId);
+    if (!item || item.deletedAt) throw notFound("Item da Inbox não encontrado");
+    if (item.processedAt) throw conflict("Este item da Inbox já foi processado");
+    const lines = item.content.split("\n");
+    const title = (lines[0] ?? "").slice(0, 300);
+    const body = [lines.slice(1).join("\n").trim(), item.url && item.url !== item.content ? item.url : ""].filter(Boolean).join("\n");
+    return this.create({ title, content: docFromText(body) }, inboxId);
+  }
+
+  async create(input: CreateNoteInput, processInboxId?: string): Promise<Note> {
     const id = uuidv7();
     const { content, tagIds, bookId, title, ...loc } = input;
     const location = await this.resolveLocation(loc);
@@ -83,7 +95,7 @@ export class NoteService {
     const doc = content ?? emptyDoc();
     const d = await this.derive(id, doc);
     const values: NewNote = { id, title: title ?? "", contentJson: doc, contentText: d.text, ...location };
-    await this.repo.save({ insert: values }, { linkTargets: d.linkTargets, fileIds: d.fileIds }, { bookId });
+    await this.repo.save({ insert: values }, { linkTargets: d.linkTargets, fileIds: d.fileIds }, { bookId, processInboxId });
     if (tagIds?.length) await this.setTags(id, tagIds);
     return this.get(id);
   }

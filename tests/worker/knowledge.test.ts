@@ -70,6 +70,18 @@ describe("notes", () => {
   });
 });
 
+describe("inbox → note", () => {
+  it("converts atomically (title = first line) and refuses double processing", async () => {
+    await env.DB.prepare("delete from inbox_items").run();
+    const item = await api.ok<{ id: string }>("POST", "/api/inbox", { content: "Ideia de artigo\nsobre PARA e notas" });
+    const note = await api.ok<Note>("POST", `/api/inbox/${item.id}/convert-to-note`);
+    expect(note.title).toBe("Ideia de artigo");
+    expect(note.excerpt).toBe("sobre PARA e notas");
+    expect(await env.DB.prepare("select processed_at from inbox_items where id = ?").bind(item.id).first("processed_at")).toBeTypeOf("number");
+    expect(await code(await api.req("POST", `/api/inbox/${item.id}/convert-to-note`))).toBe("CONFLICT");
+  });
+});
+
 describe("tags", () => {
   it("assigns tags to several entity types and filters by tag", async () => {
     const t1 = await api.ok<Tag>("POST", "/api/tags", { name: "ideia" });

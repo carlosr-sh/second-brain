@@ -30,6 +30,9 @@ export const noteRoutes = new Hono<AppEnv>()
   .delete("/:id", async (c) => (await s(c).notes.trash(idOf(c)), noContent(c)))
   .post("/:id/restore", async (c) => ok(c, await s(c).notes.restore(idOf(c))));
 
+/** Inbox → note (atomic). */
+export const inboxToNoteRoutes = new Hono<AppEnv>().post("/:id/convert-to-note", async (c) => ok(c, await s(c).notes.convertFromInbox(idOf(c), s(c).inboxRepo), 201));
+
 export const notebookRoutes = new Hono<AppEnv>()
   .get("/", async (c) => ok(c, await s(c).notebooks.list(archivedOf(c))))
   .post("/", async (c) => ok(c, await s(c).notebooks.create(await parseJsonBody(c, createNotebookSchema)), 201))

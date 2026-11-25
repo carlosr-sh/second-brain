@@ -199,3 +199,17 @@ Regras de negócio ficam nos **serviços** (`src/worker/services/*.service.ts`) 
   estatísticas são derivadas no servidor. Efeitos que precisam acontecer sempre (avisos, rollback) ficam nos
   callbacks do **hook**, não nos de `mutate()`.
 * **Kanban genérico** (`components/kanban-board.tsx`, dnd-kit), usado por tarefas e projetos; carregado sob demanda.
+
+## 12. Conhecimento (Fase 4)
+
+* **Documento rico = JSON validado**, nunca HTML (`src/shared/rich-text.ts`): lista branca de nós, marcas e
+  atributos, com limites de profundidade e tamanho. O mesmo módulo deriva texto, links e anexos.
+  O editor (Tiptap) só tem extensões cujos nós estão na lista branca.
+* **Salvar uma nota** é uma transação (`db.batch`): nota + `note_links` (recriados) + `note_attachments`
+  (recriados) [+ `book_notes`] [+ item da Inbox processado].
+* **Busca**: um índice FTS5 único (`search_index`) mantido por triggers; a consulta é montada com termos entre
+  aspas e prefixo, e ordenada por `bm25` (título pesa 8×).
+* **Arquivos**: `POST /api/files` (multipart) → tipo detectado pelos bytes → R2 `files/<uuid>` → linha em `files`.
+  `GET /api/files/:id` responde em streaming do R2 com CSP `sandbox`.
+* **Front**: as dependências pesadas do editor ficam no chunk da página de Notas (143 KB gzip, carregado sob
+  demanda). O autosave usa debounce de 700 ms e envia o pendente ao trocar de nota ou fechar a aba (com `keepalive`).

@@ -1,4 +1,4 @@
-import { ArrowRightIcon, FolderKanbanIcon, InboxIcon, SunIcon } from "lucide-react";
+import { ArrowRightIcon, FolderKanbanIcon, InboxIcon, StickyNoteIcon, SunIcon } from "lucide-react";
 import { useEffect, useState, type FormEvent } from "react";
 import { Link } from "react-router";
 import { toast } from "sonner";
@@ -12,7 +12,7 @@ import { useCaptureInbox, useInboxCount, useInboxItems } from "@/features/inbox/
 import { InboxList } from "@/features/inbox/inbox-list";
 import { splitCapture } from "@/features/inbox/quick-capture-dialog";
 import { KeysHint } from "@/features/shortcuts/keys-hint";
-import { useSystemStatus } from "@/features/system/hooks";
+import { useNotes } from "@/features/knowledge/queries";
 import { OPEN_TASK_STATUSES } from "@/features/para/labels";
 import { useProjects, useTasks } from "@/features/para/queries";
 import { useToday } from "@/features/para/use-today";
@@ -83,30 +83,6 @@ function InboxWidget() {
   );
 }
 
-function SystemWidget() {
-  const status = useSystemStatus();
-  const ok = status.data && status.data.checks.database.ok && status.data.checks.storage.ok;
-  return (
-    <Card>
-      <CardHeader>
-        <CardTitle>Sistema</CardTitle>
-        <span className={`size-2 rounded-full ${status.isPending ? "bg-muted-foreground" : ok ? "bg-success" : "bg-destructive"}`} aria-hidden />
-      </CardHeader>
-      <CardContent className="space-y-1 text-muted-foreground">
-        {status.data ? (
-          <>
-            <p>{ok ? "Banco e armazenamento operando" : "Há um problema de infraestrutura"}</p>
-            <p className="text-xs">v{status.data.version} · {status.data.environment}</p>
-          </>
-        ) : (
-          <Skeleton className="h-10" />
-        )}
-        <Link to="/settings" className="inline-block pt-2 text-xs text-brand hover:underline">Detalhes</Link>
-      </CardContent>
-    </Card>
-  );
-}
-
 function TodayWidget() {
   const today = useToday();
   const tasks = useTasks({ status: OPEN_TASK_STATUSES.join(","), dueTo: today });
@@ -128,6 +104,23 @@ function TodayWidget() {
           <p className="px-2 text-muted-foreground">Nada vencendo hoje.</p>
         )}
         <QuickAddTask defaults={{ dueDate: today }} placeholder="Adicionar para hoje…" />
+      </CardContent>
+    </Card>
+  );
+}
+
+function RecentNotesWidget() {
+  const notes = useNotes();
+  return (
+    <Card>
+      <CardHeader>
+        <CardTitle className="flex items-center gap-2"><StickyNoteIcon className="size-4" /> Notas recentes</CardTitle>
+        <Link to="/notes" className="text-xs text-brand hover:underline">Ver todas</Link>
+      </CardHeader>
+      <CardContent className="space-y-2">
+        {notes.isPending ? <Skeleton className="h-16" /> : notes.data?.length ? notes.data.slice(0, 5).map((n) => (
+          <Link key={n.id} to={`/notes/${n.id}`} className="block truncate hover:underline">{n.title || "Sem título"}</Link>
+        )) : <p className="text-muted-foreground">Nenhuma nota ainda.</p>}
       </CardContent>
     </Card>
   );
@@ -174,7 +167,7 @@ export function DashboardPage() {
         <TodayWidget />
         <ActiveProjectsWidget />
         <InboxWidget />
-        <SystemWidget />
+        <RecentNotesWidget />
       </div>
     </Page>
   );

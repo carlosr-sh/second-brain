@@ -126,3 +126,32 @@
     *, *::before, *::after { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; }
   }
 }
+
+/* ---------- Rich-text notes (Tiptap/ProseMirror content) ---------- */
+@layer components {
+  .prose-note { @apply text-[15px] leading-7 text-foreground; }
+  .prose-note > * + * { @apply mt-3; }
+  .prose-note h1 { @apply mt-6 text-2xl font-semibold tracking-tight; }
+  .prose-note h2 { @apply mt-5 text-xl font-semibold tracking-tight; }
+  .prose-note h3 { @apply mt-4 text-lg font-semibold; }
+  .prose-note ul { @apply list-disc pl-6; }
+  .prose-note ol { @apply list-decimal pl-6; }
+  .prose-note li > p { @apply my-0.5; }
+  .prose-note blockquote { @apply border-l-2 border-brand/50 pl-4 text-muted-foreground italic; }
+  .prose-note code { @apply rounded bg-muted px-1 py-0.5 font-mono text-[13px]; }
+  .prose-note pre { @apply overflow-x-auto rounded-lg bg-muted p-3 font-mono text-[13px] leading-6; }
+  .prose-note pre code { @apply bg-transparent p-0; }
+  .prose-note a { @apply text-brand underline decoration-brand/40 underline-offset-2; }
+  .prose-note a.note-link { @apply rounded bg-brand-soft px-1 font-medium no-underline hover:underline; }
+  .prose-note a.note-link::before { content: "↗ "; @apply text-xs opacity-60; }
+  .prose-note mark { @apply rounded bg-warning/40 px-0.5 text-foreground; }
+  .prose-note hr { @apply my-6 border-border; }
+  .prose-note img { @apply max-h-[480px] max-w-full rounded-lg border; }
+  .prose-note img.ProseMirror-selectednode { @apply ring-2 ring-brand; }
+  .prose-note ul[data-type="taskList"] { @apply list-none pl-1; }
+  .prose-note ul[data-type="taskList"] li { @apply flex items-start gap-2; }
+  .prose-note ul[data-type="taskList"] li > label { @apply mt-1.5 select-none; }
+  .prose-note ul[data-type="taskList"] li > label input { @apply size-4 accent-[var(--brand)]; }
+  .prose-note ul[data-type="taskList"] li[data-checked="true"] > div { @apply text-muted-foreground line-through; }
+  .prose-note p.is-editor-empty:first-child::before { content: attr(data-placeholder); @apply pointer-events-none float-left h-0 text-muted-foreground; }
+}

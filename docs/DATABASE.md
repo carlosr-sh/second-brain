@@ -104,7 +104,7 @@ essas tabelas — não precisam de tabelas próprias.
 * **Tags únicas sem diferenciar maiúsculas** (`UNIQUE (name COLLATE NOCASE)`).
 * **`contacts.last_contacted_at` não existe**: é `MAX(contact_interactions.occurred_at)`.
 
-## 5. Busca full-text (Fase 4 — planejado, ainda não migrado)
+## 5. Busca full-text (Fase 4 — migração `0001_search_fts.sql`)
 
 Tabela virtual FTS5 única, alimentada por *triggers* nas tabelas de origem:
 
@@ -113,9 +113,10 @@ CREATE VIRTUAL TABLE search_index USING fts5(
   entity_type UNINDEXED, entity_id UNINDEXED, title, body,
   tokenize = 'unicode61 remove_diacritics 2'   -- "ação" casa com "acao"
 );
--- triggers AFTER INSERT/UPDATE/DELETE em notes, journal_entries, tasks, projects,
--- bookmarks, books, resources, contacts: remove a linha antiga e reinsere
--- se deleted_at IS NULL.
+-- 24 triggers (AFTER INSERT / AFTER UPDATE OF <colunas relevantes> / AFTER DELETE) em
+-- notes, tasks, projects, areas, goals, resources, bookmarks, books. Cada um remove a
+-- linha antiga do índice e reinsere se deleted_at IS NULL (arquivados continuam pesquisáveis).
+-- Diário e contatos entram na Fase 5.
 ```
 
 ⚠️ Limitação: `wrangler d1 export` **não exporta bancos com tabelas virtuais**. Ver `RISKS.md` (R2) —

@@ -1,6 +1,6 @@
 import { and, desc, eq, inArray, isNotNull, isNull, ne, sql, type SQL } from "drizzle-orm";
 import type { Database } from "../../db/client";
-import { bookNotes, files, noteAttachments, noteLinks, notes } from "../../db/schema";
+import { bookNotes, files, inboxItems, noteAttachments, noteLinks, notes } from "../../db/schema";
 import { chunk } from "../_shared";
 
 export type NoteRow = typeof notes.$inferSelect;
@@ -64,7 +64,7 @@ export class NoteRepository {
   async save(
     mode: { insert: NewNote } | { update: { id: string; values: Partial<NewNote> } },
     derived?: { linkTargets: string[]; fileIds: string[] },
-    extra?: { bookId?: string },
+    extra?: { bookId?: string; processInboxId?: string },
   ): Promise<string> {
     const id = "insert" in mode ? (mode.insert.id as string) : mode.update.id;
     const ops = [
@@ -78,6 +78,7 @@ export class NoteRepository {
       if (derived.fileIds.length) rest.push(this.db.insert(noteAttachments).values(derived.fileIds.map((f) => ({ noteId: id, fileId: f }))));
     }
     if (extra?.bookId) rest.push(this.db.insert(bookNotes).values({ bookId: extra.bookId, noteId: id }));
+    if (extra?.processInboxId) rest.push(this.db.update(inboxItems).set({ processedAt: new Date() }).where(eq(inboxItems.id, extra.processInboxId)));
     if (rest.length) await this.db.batch([...ops, ...rest]);
     else await ops[0];
     return id;

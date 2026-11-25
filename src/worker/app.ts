@@ -7,7 +7,7 @@ import { apiNotFound, errorHandler } from "./middleware/error-handler";
 import { appContext, requestId } from "./middleware/request-context";
 import { securityHeaders } from "./middleware/security-headers";
 import { inboxRoutes } from "./routes/inbox.routes";
-import { bookmarkRoutes, bookRoutes, fileRoutes, notebookRoutes, noteRoutes, resourceRoutes, searchRoutes, tagAssignRoutes, tagRoutes } from "./routes/knowledge.routes";
+import { bookmarkRoutes, bookRoutes, fileRoutes, inboxToNoteRoutes, notebookRoutes, noteRoutes, resourceRoutes, searchRoutes, tagAssignRoutes, tagRoutes } from "./routes/knowledge.routes";
 import { areaRoutes, goalRoutes, inboxConvertRoutes, projectRoutes, taskRoutes, trashRoutes } from "./routes/para.routes";
 import { settingsRoutes } from "./routes/settings.routes";
 import { systemRoutes } from "./routes/system.routes";
@@ -53,6 +53,7 @@ export function createApp(options: CreateAppOptions = {}) {
   api.route("/settings", settingsRoutes);
   api.route("/inbox", inboxRoutes);
   api.route("/inbox", inboxConvertRoutes);
+  api.route("/inbox", inboxToNoteRoutes);
   api.route("/areas", areaRoutes);
   api.route("/goals", goalRoutes);
   api.route("/projects", projectRoutes);

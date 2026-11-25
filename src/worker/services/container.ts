@@ -44,6 +44,7 @@ export interface Services {
   tasks: TaskService;
   trash: TrashService;
   notes: NoteService;
+  inboxRepo: InboxRepository;
   notebooks: NotebookService;
   resources: ResourceService;
   tags: TagService;
@@ -89,6 +90,7 @@ export function createServices(env: Env, environment: string, timezone: string):
       notebook: repos.notebook, resource: repos.resource, bookmark: repos.bookmark, book: repos.book,
     }),
     notes: new NoteService(repos.note, repos.tag, { projects: repos.project, areas: repos.area, resources: repos.resource, notebooks: repos.notebook, books: repos.book }),
+    inboxRepo: repos.inbox,
     notebooks: new NotebookService(repos.notebook),
     resources: new ResourceService(repos.resource, repos.area),
     tags: new TagService(repos.tag, { note: repos.note, task: repos.task, project: repos.project, bookmark: repos.bookmark, book: repos.book }),

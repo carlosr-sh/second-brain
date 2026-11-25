@@ -1,5 +1,10 @@
 import { CheckSquareIcon, KeyboardIcon, MonitorIcon, MoonIcon, PanelLeftIcon, PlusIcon, SunIcon } from "lucide-react";
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router";
+import type { SearchEntity, SearchResult } from "@shared/knowledge";
+import { HighlightText } from "@/features/knowledge/highlight-text";
+import { useSearch } from "@/features/knowledge/queries";
+import { ALL_MODULES as MODULES } from "@/app/navigation";
 import {
   CommandDialog,
   Command,
@@ -24,7 +29,33 @@ import { commandFilter } from "@/lib/search-filter";
 export function CommandPalette({ onToggleSidebar }: { onToggleSidebar: () => void }) {
   const { paletteOpen, setPaletteOpen, setCaptureOpen, setShortcutsOpen } = useUiState();
   const { setPreference } = useTheme();
-  const { openNew } = useTaskEditor();
+  const { openNew, openTask } = useTaskEditor();
+  const [query, setQuery] = useState("");
+  const search = useSearch(query);
+  const results = query.trim().length >= 2 ? (search.data ?? []) : [];
+  const resultValue = (r: SearchResult) => `search:${r.entity}:${r.id}`;
+
+  // Controlled selection: cmdk only auto-selects items that passed ITS filter, and
+  // search results arrive asynchronously (forceMount) — select the first one ourselves.
+  const [selected, setSelected] = useState("");
+  const first = results[0];
+  useEffect(() => {
+    if (first && !selected.startsWith("search:")) setSelected(resultValue(first));
+  }, [first?.id]);
+
+  const ENTITY_LABEL: Record<SearchEntity, string> = {
+    note: "Nota", task: "Tarefa", project: "Projeto", area: "Área", goal: "Meta", resource: "Recurso", bookmark: "Link", book: "Livro",
+  };
+  const ENTITY_ICON = (e: SearchEntity) => MODULES.find((m) => m.id === ({ note: "notes", task: "tasks", project: "projects", area: "areas", goal: "goals", resource: "resources", bookmark: "bookmarks", book: "bookshelf" } as const)[e])?.icon;
+  const openResult = (r: SearchResult) => {
+    const routes: Record<SearchEntity, string | null> = {
+      note: `/notes/${r.id}`, task: null, project: `/projects/${r.id}`, area: `/areas/${r.id}`, goal: "/goals",
+      resource: `/resources/${r.id}`, bookmark: "/bookmarks", book: "/bookshelf",
+    };
+    const to = routes[r.entity];
+    if (to) navigate(to);
+    else openTask(r.id);
+  };
   const navigate = useNavigate();
 
   const run = (fn: () => void) => () => {
@@ -33,11 +64,36 @@ export function CommandPalette({ onToggleSidebar }: { onToggleSidebar: () => voi
   };
 
   return (
-    <CommandDialog open={paletteOpen} onOpenChange={setPaletteOpen} title="Buscar e comandos" description="Navegue ou execute uma ação">
-      <Command loop filter={commandFilter}>
-        <CommandInput placeholder="Ir para… ou digite um comando" />
+    <CommandDialog open={paletteOpen} onOpenChange={(o) => { setPaletteOpen(o); if (!o) { setQuery(""); setSelected(""); } }} title="Buscar e comandos" description="Navegue ou execute uma ação">
+      <Command
+        loop
+        filter={commandFilter}
+        value={selected}
+        // cmdk resets the selection to "" when no STATIC item matches the query,
+        // even though search results are shown: fall back to the first result.
+        onValueChange={(v) => setSelected(v || (first ? resultValue(first) : ""))}
+      >
+        <CommandInput placeholder="Buscar em tudo, ir para… ou digite um comando" value={query} onValueChange={setQuery} />
         <CommandList>
-          <CommandEmpty>Nada encontrado. A busca no conteúdo chega na Fase 4.</CommandEmpty>
+          {/* cmdk's empty state ignores forceMount items: only show it when search found nothing too. */}
+          {results.length === 0 && <CommandEmpty>{query.trim().length >= 2 && search.isFetching ? "Buscando…" : "Nada encontrado."}</CommandEmpty>}
+          {results.length > 0 && (
+            <CommandGroup heading="Conteúdo" forceMount>
+              {results.map((r) => {
+                const Icon = ENTITY_ICON(r.entity);
+                return (
+                  <CommandItem key={`${r.entity}:${r.id}`} value={resultValue(r)} forceMount onSelect={run(() => openResult(r))} data-testid="search-result">
+                    {Icon && <Icon />}
+                    <div className="min-w-0 flex-1">
+                      <HighlightText text={r.title || "(sem título)"} className="block truncate" />
+                      {r.snippet && <HighlightText text={r.snippet} className="block truncate text-xs text-muted-foreground" />}
+                    </div>
+                    <span className="text-xs text-muted-foreground">{ENTITY_LABEL[r.entity]}</span>
+                  </CommandItem>
+                );
+              })}
+            </CommandGroup>
+          )}
           <CommandGroup heading="Ações">
             <CommandItem value="Captura rápida" onSelect={run(() => setCaptureOpen(true))} keywords={["nova", "inbox", "adicionar", "capture"]}>
               <PlusIcon /> Captura rápida

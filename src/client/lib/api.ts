@@ -32,8 +32,9 @@ export function onSessionExpired(fn: SessionListener): () => void {
  *    with a redirect to its login domain. Following it cross-origin would
  *    surface as an opaque CORS TypeError; instead we detect it explicitly.
  */
-export async function api<T>(path: string, init: RequestInit & { json?: unknown } = {}): Promise<T> {
-  const { json, ...rest } = init;
+export async function api<T>(path: string, init: RequestInit & { json?: unknown; keepalive?: boolean } = {}): Promise<T> {
+  const { json, keepalive, ...rest } = init;
+  const requestBody = json !== undefined ? JSON.stringify(json) : rest.body;
   const headers = new Headers(rest.headers);
   headers.set("Accept", "application/json");
   if (json !== undefined) headers.set("Content-Type", "application/json");
@@ -41,8 +42,11 @@ export async function api<T>(path: string, init: RequestInit & { json?: unknown 
   const res = await fetch(`/api${path}`, {
     ...rest,
     headers,
-    body: json !== undefined ? JSON.stringify(json) : rest.body,
+    body: requestBody,
     credentials: "same-origin",
+    // keepalive lets the browser finish the request after the page unloads
+    // (autosave on tab close). Browsers cap keepalive bodies at 64 KiB.
+    keepalive: keepalive === true && typeof requestBody === "string" && requestBody.length < 60_000,
     redirect: "manual",
   });
 

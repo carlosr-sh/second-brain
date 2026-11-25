@@ -34,6 +34,13 @@ const stub = {
   "/api/inbox?status=open": [{ id: "0190a0a0-0000-7000-8000-000000000001", content: "Item", url: null, processedAt: null, createdAt: now }],
   "/api/system/status": { version: "0.0.0", environment: "production", serverTime: now, checks: { database: { ok: true, latencyMs: 1 }, storage: { ok: true, latencyMs: 1 } }, migrations: [] },
   "/api/audit-logs?limit=20": [],
+  // A real note so the rich-text editor (Tiptap/ProseMirror) actually mounts.
+  "/api/notes/0190a0a0-0000-7000-8000-0000000000aa": {
+    id: "0190a0a0-0000-7000-8000-0000000000aa", title: "Nota", excerpt: "", notebookId: null, projectId: null, areaId: null, resourceId: null,
+    isPinned: false, isFavorite: false, tagIds: [], archivedAt: null, createdAt: now, updatedAt: now, wordCount: 2,
+    content: { type: "doc", content: [{ type: "heading", attrs: { level: 2 }, content: [{ type: "text", text: "Olá" }] },
+      { type: "paragraph", content: [{ type: "text", text: "mundo", marks: [{ type: "bold" }] }, { type: "noteLink", attrs: { id: "0190a0a0-0000-7000-8000-0000000000bb", label: "outra" } }] }] },
+  },
 };
 const types = { ".js": "text/javascript", ".css": "text/css", ".html": "text/html", ".woff2": "font/woff2" };
 
@@ -41,7 +48,7 @@ const server = http.createServer((req, res) => {
   res.setHeader("Content-Security-Policy", csp);
   if (req.url.startsWith("/api/")) {
     res.setHeader("content-type", "application/json");
-    const listLike = /^\/api\/(tasks|projects|areas|goals|trash)(\?|$)/.test(req.url);
+    const listLike = /^\/api\/(tasks|projects|areas|goals|trash|notes|notebooks|tags|resources|bookmarks|books|search)(\?|$)|\/backlinks$/.test(req.url);
     return res.end(JSON.stringify({ data: stub[req.url] ?? (listLike ? [] : null) }));
   }
   let file = path.join(root, decodeURIComponent(req.url.split("?")[0]));
@@ -61,11 +68,18 @@ try {
   await page.addInitScript(() =>
     document.addEventListener("securitypolicyviolation", (e) => console.error(`CSP violation: ${e.violatedDirective} ${e.blockedURI}`)),
   );
-  for (const route of ["/", "/inbox", "/settings", "/tasks", "/tasks?view=board", "/tasks?view=calendar", "/tasks?view=table", "/projects", "/areas", "/goals", "/archive", "/archive?tab=trash", "/nao-existe"]) {
+  for (const route of ["/", "/inbox", "/settings", "/tasks", "/tasks?view=board", "/tasks?view=calendar", "/tasks?view=table", "/projects", "/areas", "/goals", "/archive", "/archive?tab=trash", "/notes", "/notes/0190a0a0-0000-7000-8000-0000000000aa", "/notebooks", "/tags", "/resources", "/bookmarks", "/bookshelf", "/nao-existe"]) {
     await page.goto(base + route, { waitUntil: "networkidle" });
   }
+  // The editor must actually be mounted, otherwise this check proves nothing about Tiptap.
+  await page.goto(base + "/notes/0190a0a0-0000-7000-8000-0000000000aa", { waitUntil: "networkidle" });
+  const editorMounted = await page.locator(".ProseMirror h2", { hasText: "Olá" }).count();
+  if (!editorMounted) problems.push("rich-text editor did not mount (check is not exercising Tiptap)");
+  await page.locator(".ProseMirror").click();
+  await page.keyboard.type(" teste");
   await page.keyboard.press("Control+k");
-  await page.waitForTimeout(300);
+  await page.keyboard.type("ola");
+  await page.waitForTimeout(400);
 } finally {
   await browser.close();
   server.close();
